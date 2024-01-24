@@ -10,6 +10,12 @@ namespace ceras
 
     namespace// anonymous namespace
     {
+		template <typename Range, typename Function>
+        void omp_for(const Range& vec, const Function& func){
+			#pragma omp parallel for
+			for(const auto& idx : vec) func(idx);
+		}
+		
         template < std::size_t Index, typename Type, typename... Types >
         struct extract_type_forward
         {
@@ -49,7 +55,16 @@ namespace ceras
             {
                 f( *(begin1+idx), *(beginn+idx)... );
             };
-            parallel( func, 0UL, n );
+            //parallel( func, 0UL, n );
+			
+			const auto& vec = range(n);
+			
+			if(std::is_constant_evaluated()){
+				for(const auto& idx : vec) func(idx);
+			}else{
+				omp_for(vec, func);
+			}
+			
             return f;
         }
 
