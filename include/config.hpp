@@ -21,7 +21,7 @@ namespace ceras
     /// }
     /// @endcode
     ///
-    #ifdef _MSC_VER
+    #ifdef _WIN32
         inline constexpr unsigned long is_windows_platform = 1;
     #else
         inline constexpr unsigned long is_windows_platform = 0;

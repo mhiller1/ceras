@@ -68,7 +68,7 @@ namespace ceras
                    Tsor sm = softmax( prediction_input );
                    typedef typename Tsor::value_type value_type;
                    typename Tsor::value_type ans{0};
-                   unsigned long const n = *(ground_truth_input.shape().rbegin());
+                   size_t const n = *(ground_truth_input.shape().rbegin());
                    value_type const _c0 = label_smoothing_factor / (n-1);
                    value_type const _c1 = value_type{1} - label_smoothing_factor;
 
@@ -92,7 +92,7 @@ namespace ceras
                    typedef typename Tsor::value_type value_type;
                    value_type const factor = grad[0]; // the shape of grad is {1,}
 
-                   unsigned long const n = *(ground_truth_input.shape().rbegin());
+                   size_t const n = *(ground_truth_input.shape().rbegin());
                    value_type const _c0 = label_smoothing_factor / (n-1);
                    value_type const _c1 = value_type{1} - label_smoothing_factor;
 

@@ -27,19 +27,19 @@ namespace ceras
     ///
     struct identity_output_shape_calculator
     {
-        std::vector<unsigned long> operator()( std::vector<unsigned long> const& input_shape ) const noexcept
+        std::vector<size_t> operator()( std::vector<size_t> const& input_shape ) const noexcept
         {
             return input_shape;
         }
 
-        std::vector<unsigned long> operator()( std::vector<unsigned long> const& lhs_input_shape, std::vector<unsigned long> const& rhs_input_shape ) const noexcept
+        std::vector<size_t> operator()( std::vector<size_t> const& lhs_input_shape, std::vector<size_t> const& rhs_input_shape ) const noexcept
         {
             return lhs_input_shape.size() > rhs_input_shape.size() ? lhs_input_shape : rhs_input_shape;
         }
 
-        std::vector<unsigned long> operator()() const noexcept
+        std::vector<size_t> operator()() const noexcept
         {
-            return std::vector<unsigned long>{ {-1UL,} };
+            return std::vector<size_t>{ {-1UL,} };
         }
     }; // struct identity_output_shape_calculator
 
@@ -96,7 +96,7 @@ namespace ceras
         ///
         /// @brief Calculate the output tensor shape.
         ///
-        std::vector<unsigned long> shape() const noexcept
+        std::vector<size_t> shape() const noexcept
         {
             return output_shape_calculator()( op().shape() );
         }
@@ -127,7 +127,7 @@ namespace ceras
                                         Serializer const& serializer = Serializer{}
             ) noexcept
     {
-        static_assert( std::is_invocable_v<Output_Shape_Calculator, std::vector<unsigned long>>, "Unary operator shape calculator should be able to accept a vector of unsigned long." );
+        static_assert( std::is_invocable_v<Output_Shape_Calculator, std::vector<size_t>>, "Unary operator shape calculator should be able to accept a vector of size_t." );
         return [&]( auto const& op ) noexcept
         {
             auto ans = unary_operator{ op, unary_forward_action, unary_backward_action, output_shape_calculator, serializer };
@@ -209,7 +209,7 @@ namespace ceras
         ///
         /// @brief Calculate the output shape.
         ///
-        std::vector<unsigned long> shape() const noexcept
+        std::vector<size_t> shape() const noexcept
         {
             if constexpr ( is_value_v<Lhs_Operator> )
                 return rhs_op().shape();
@@ -246,7 +246,7 @@ namespace ceras
                                Output_Shape_Calculator const& output_shape_calculator = Output_Shape_Calculator{},
                                Serializer const& serializer = Serializer{}) noexcept
     {
-        static_assert( std::is_invocable_v<Output_Shape_Calculator, std::vector<unsigned long>, std::vector<unsigned long>>, "Unary operator shape calculator should be able to accept two vectors of unsigned long." );
+        static_assert( std::is_invocable_v<Output_Shape_Calculator, std::vector<size_t>, std::vector<size_t>>, "Unary operator shape calculator should be able to accept two vectors of size_t." );
         return [&]( auto const& lhs_op, auto const& rhs_op ) noexcept
         {
             auto ans = binary_operator{ lhs_op, rhs_op, binary_forward_action, binary_backward_action, output_shape_calculator, serializer };
@@ -324,10 +324,10 @@ namespace ceras
             auto const& [input_expression_name, input_expression_code] = serialize( input_expression );
             std::string const& self_expression_identity = fmt::format( "unary_expression_{}_{}", self_expression.name(), self_expression.id() );
             std::vector<std::string> self_expression_code = input_expression_code;
-            constexpr unsigned long number_of_args = sizeof...( Args );
+            constexpr size_t number_of_args = sizeof...( Args );
             std::string arg_string_formater = std::string{ "{}" };
             {
-                for ( unsigned long idx = 1; idx < number_of_args; ++idx )
+                for ( size_t idx = 1; idx < number_of_args; ++idx )
                     arg_string_formater += std::string{", {}"};
             }
             std::string code_formater =  std::string{"auto {} = {}( "} + arg_string_formater +  std::string{" )( {} );"};
@@ -340,10 +340,10 @@ namespace ceras
                                 auto const& [input_expression_name, input_expression_code] = serialize( input_expression );
                                 std::string const& self_expression_identity = fmt::format( "unary_expression_{}_{}", self_expression.name(), self_expression.id() );
                                 std::vector<std::string> self_expression_code = input_expression_code;
-                                constexpr unsigned long number_of_args = sizeof...( Args );
+                                constexpr size_t number_of_args = sizeof...( Args );
                                 std::string arg_string_formater = std::string{ "{}" };
                                 {
-                                    for ( unsigned long idx = 1; idx < number_of_args; ++idx )
+                                    for ( size_t idx = 1; idx < number_of_args; ++idx )
                                         arg_string_formater += std::string{", {}"};
                                 }
                                 std::string code_formater =  std::string{"auto {} = {}( "} + arg_string_formater +  std::string{" )( {} );"};
@@ -357,10 +357,10 @@ namespace ceras
                                 std::string const& self_expression_identity = fmt::format( "unary_expression_{}_{}", self_expression.name(), self_expression.id() );
                                 std::vector<std::string> self_expression_code = lhs_input_expression_code;
                                 std::copy( rhs_input_expression_code.begin(), rhs_input_expression_code.end(), std::back_inserter( self_expression_code ) );
-                                constexpr unsigned long number_of_args = sizeof...( Args );
+                                constexpr size_t number_of_args = sizeof...( Args );
                                 std::string arg_string_formater = std::string{ "{}" };
                                 {
-                                    for ( unsigned long idx = 1; idx < number_of_args; ++idx )
+                                    for ( size_t idx = 1; idx < number_of_args; ++idx )
                                         arg_string_formater += std::string{", {}"};
                                 }
                                 std::string code_formater =  std::string{"auto {} = {}( "} + arg_string_formater +  std::string{" )( {}, {} );"};
@@ -385,9 +385,9 @@ namespace ceras
             std::string const name = expr.name();
             std::string node = std::string{"n"} + id;
 
-            std::vector<long long> shape;
+            std::vector<size_t> shape;
             {
-                std::vector<unsigned long> _shape = expr.shape();
+                std::vector<size_t> _shape = expr.shape();
                 shape.resize( _shape.size() );
                 std::copy( _shape.begin(), _shape.end(), shape.begin() );
                 if ( _shape.size() > 0 && _shape[0] == -1UL )
@@ -426,12 +426,12 @@ namespace ceras
             }
             else if constexpr ( is_variable_v<Expr> )
             {
-                std::vector<unsigned long> const& shape = expr.shape();
+                std::vector<size_t> const& shape = expr.shape();
                 bool const training_state = expr.trainable();
 
                 // shape
                 std::stringstream ss;
-                std::copy( shape.begin(), shape.end(), std::ostream_iterator<unsigned long>( ss, " " ) );
+                std::copy( shape.begin(), shape.end(), std::ostream_iterator<size_t>( ss, " " ) );
                 std::string const& str_shape = ss.str() + (training_state ? std::string{"), trainable"} : std::string{"), non-trainable"});
                 // trainable state
                 std::string const& new_label = label + std::string{"[("} + str_shape + std::string{"]"};
@@ -461,7 +461,7 @@ namespace ceras
     /// auto f = broadcast( {128, 128, 64} )( e ); // shape `(128, 128, 64)`
     /// \endcode
     ///
-    auto inline broadcast( std::vector<unsigned long> const& new_shape ) noexcept
+    auto inline broadcast( std::vector<size_t> const& new_shape ) noexcept
     {
         std::shared_ptr<std::any> forward_cache = std::make_shared<std::any>();
         std::shared_ptr<std::any> backward_cache = std::make_shared<std::any>();
@@ -474,13 +474,13 @@ namespace ceras
                 {
                     better_assert( input.size() , "broadcast::forward: empty input." );
 
-                    std::vector<unsigned long> const& old_shape = input.shape();
+                    std::vector<size_t> const& old_shape = input.shape();
                     if (new_shape == old_shape) return input;
 
                     // Note: ceras only considers simple cases such as `Wx+b`, in which `b` is either has shape `(n,)` or shape `(1,n)`, the implementation is simplified accordingly.
-                    unsigned long const new_size = std::accumulate( new_shape.begin(), new_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
-                    unsigned long const old_size = std::accumulate( old_shape.begin(), old_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
-                    unsigned long const factor = new_size / old_size;
+                    size_t const new_size = std::accumulate( new_shape.begin(), new_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
+                    size_t const old_size = std::accumulate( old_shape.begin(), old_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
+                    size_t const factor = new_size / old_size;
 
                     Tsor& ans = context_cast<Tsor>( forward_cache );
                     ans.resize( new_shape );
@@ -498,11 +498,11 @@ namespace ceras
 
                     better_assert( output.shape() == grad.shape(), fmt::format( "Error with broadcast: shape mismatch. Output shape is {}, but grad shape is {}", output.shape(), grad.shape() ) );
 
-                    std::vector<unsigned long> const& old_shape = input.shape();
-                    unsigned long const old_size = std::accumulate( old_shape.begin(), old_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
-                    std::vector<unsigned long> const& new_shape = grad.shape();
-                    unsigned long const new_size = std::accumulate( new_shape.begin(), new_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
-                    unsigned long const factor = new_size / old_size;
+                    std::vector<size_t> const& old_shape = input.shape();
+                    size_t const old_size = std::accumulate( old_shape.begin(), old_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
+                    std::vector<size_t> const& new_shape = grad.shape();
+                    size_t const new_size = std::accumulate( new_shape.begin(), new_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
+                    size_t const factor = new_size / old_size;
 
                     Tsor& ans = context_cast<Tsor>( backward_cache );
                     ans.resize( input.shape() );
@@ -513,7 +513,7 @@ namespace ceras
                     return ans;
                 },
                 "broadcast",
-                [new_shape]( std::vector<unsigned long> const&) noexcept { return new_shape; },
+                [new_shape]( std::vector<size_t> const&) noexcept { return new_shape; },
                 make_argumented_operator_serializer( new_shape )
             )(ex);
         };
@@ -561,7 +561,7 @@ namespace ceras
     template< Expression Lhs_Expression, Expression Rhs_Expression >
     auto constexpr plus( Lhs_Expression const& lhs_ex, Rhs_Expression const& rhs_ex ) noexcept
     {
-        auto const& shape_calculator = []( std::vector<unsigned long> const& l, std::vector<unsigned long> const& r ) noexcept
+        auto const& shape_calculator = []( std::vector<size_t> const& l, std::vector<size_t> const& r ) noexcept
         {
             return broadcast_shape( l, r );
         };
@@ -642,12 +642,12 @@ namespace ceras
         }
         else
         {
-            auto const& shape_calculator = []( std::vector<unsigned long> const& l, std::vector<unsigned long> const& r ) noexcept
+            auto const& shape_calculator = []( std::vector<size_t> const& l, std::vector<size_t> const& r ) noexcept
             {
                 better_assert( l.size() == 2, fmt::format( "expecting l size of 2, but got {}", l.size() ) );
                 better_assert( r.size() == 2, fmt::format( "expecting r size of 2, but got {}", r.size() ) );
                 better_assert( l[1] == r[0], fmt::format( "expecting l[1] == r[0], but l[1]={}, r[0]={}", l[1], r[0] ) ); // TODO: what if unknown dimension???
-                return std::vector<unsigned long>{ {l[0], r[1]} };
+                return std::vector<size_t>{ {l[0], r[1]} };
             };
             std::shared_ptr<std::any> forward_cache = std::make_shared<std::any>();
             std::shared_ptr<std::any> backward_cache_lhs = std::make_shared<std::any>();
@@ -935,7 +935,7 @@ namespace ceras
                                         return ans;
                                     },
                                     "sum_reduce",
-                                    []( std::vector<unsigned long> const& ) noexcept { return std::vector<unsigned long>{ {1,} }; }
+                                    []( std::vector<size_t> const& ) noexcept { return std::vector<size_t>{ {1,} }; }
                 )( ex );
     }
 
@@ -971,12 +971,12 @@ namespace ceras
                                         better_assert( grad.size() == 1, "mean_reduce should only output one value" );
                                         Tsor ans = ones_like( input );
                                         ans *= grad[0];
-                                        unsigned long const batch_size = (input.shape().size() == 1) ? 1 : (*(input.shape().begin()));
+                                        size_t const batch_size = (input.shape().size() == 1) ? 1 : (*(input.shape().begin()));
                                         ans /= static_cast<typename Tsor::value_type>(batch_size);
                                         return ans;
                                     },
                                     "mean_reduce",
-                                    []( std::vector<unsigned long> const& ) noexcept { return std::vector<unsigned long>{ {1,} }; }
+                                    []( std::vector<size_t> const& ) noexcept { return std::vector<size_t>{ {1,} }; }
                 )( ex );
     }
 
@@ -1112,7 +1112,7 @@ namespace ceras
     //  false: do not consider the batch size
     //      - for an input of (1, 3, 4), expecting an incoming expression of shape like [12, 1]
     //      - expected output of shape [1, 3, 4]
-    auto inline reshape( std::vector<unsigned long> const& new_shape, bool include_batch_flag=true ) noexcept
+    auto inline reshape( std::vector<size_t> const& new_shape, bool include_batch_flag=true ) noexcept
     {
         return [new_shape, include_batch_flag]<Expression Ex>( Ex const& ex ) noexcept
         {
@@ -1120,9 +1120,9 @@ namespace ceras
             (
                 [new_shape, include_batch_flag]<Tensor Tsor>( Tsor const& tsor ) noexcept
                 {
-                    unsigned long const new_size = std::accumulate( new_shape.begin(), new_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
-                    unsigned long const total_size = tsor.size();
-                    unsigned long const batch_size = total_size / new_size;
+                    size_t const new_size = std::accumulate( new_shape.begin(), new_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
+                    size_t const total_size = tsor.size();
+                    size_t const batch_size = total_size / new_size;
 
                     better_assert( batch_size * new_size == total_size, "size mismatch for reshape operator, expect ",  batch_size*new_size, " but total input size is ", total_size, ", where batch_size is ", batch_size );
 
@@ -1134,7 +1134,7 @@ namespace ceras
                         return ans;
                     }
 
-                    std::vector<unsigned long> batched_new_shape;
+                    std::vector<size_t> batched_new_shape;
                     {
                         batched_new_shape.resize( 1 + new_shape.size() );
                         batched_new_shape[0] = batch_size;
@@ -1152,15 +1152,15 @@ namespace ceras
                     return ans;
                 },
                 "reshape",
-                [new_shape, include_batch_flag]( std::vector<unsigned long> const& shape ) noexcept
+                [new_shape, include_batch_flag]( std::vector<size_t> const& shape ) noexcept
                 {
                     if ( include_batch_flag == false )
                         return new_shape;
 
-                    unsigned long const new_size = std::accumulate( new_shape.begin(), new_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
-                    unsigned long const total_size = std::accumulate( shape.begin(), shape.end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } );
-                    unsigned long const batch_size = total_size / new_size;
-                    std::vector<unsigned long> batched_new_shape;
+                    size_t const new_size = std::accumulate( new_shape.begin(), new_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
+                    size_t const total_size = std::accumulate( shape.begin(), shape.end(), 1UL, []( size_t x, size_t y ){ return x*y; } );
+                    size_t const batch_size = total_size / new_size;
+                    std::vector<size_t> batched_new_shape;
                     {
                         batched_new_shape.resize( 1 + new_shape.size() );
                         batched_new_shape[0] = batch_size;
@@ -1199,8 +1199,8 @@ namespace ceras
             []<Tensor Tsor>( Tsor const& tsor ) noexcept
             {
                 better_assert( tsor.ndim() > 1, "Expecting dimension of incoming tensor to be greater than 1, but got ", tsor.ndim() );
-                unsigned long const batch_size = *(tsor.shape().begin());
-                unsigned long const rem = tsor.size() / batch_size;
+                size_t const batch_size = *(tsor.shape().begin());
+                size_t const rem = tsor.size() / batch_size;
                 Tsor ans = tsor;
                 return ans.reshape( {batch_size, rem} );
             },
@@ -1210,10 +1210,10 @@ namespace ceras
                 return ans.reshape( input.shape() );
             },
             "flatten",
-            []( std::vector<unsigned long> const& shape ) noexcept
+            []( std::vector<size_t> const& shape ) noexcept
             {
-                unsigned long const total = std::accumulate( shape.begin()+1, shape.end(), 1, []( unsigned long x, unsigned long y ){ return x*y; } );
-                return std::vector<unsigned long>{ {shape[0], total,} }; // the 1st dim is batch size
+                size_t const total = std::accumulate( shape.begin()+1, shape.end(), 1, []( size_t x, size_t y ){ return x*y; } );
+                return std::vector<size_t>{ {shape[0], total,} }; // the 1st dim is batch size
             }
         )( ex );
     }
@@ -1237,7 +1237,7 @@ namespace ceras
                 [=]<Tensor Tsor>( Tsor const& tsor ) noexcept
                 {//forward propagation
                     Tsor ans = tsor;
-                    std::vector<unsigned long> shape = ans.shape();
+                    std::vector<size_t> shape = ans.shape();
                     int const _axis = (axis == -1) ? shape.size() : axis;
                     shape.insert( shape.begin()+_axis, 1UL );
                     ans.reshape( shape );
@@ -1250,9 +1250,9 @@ namespace ceras
                     return ans;
                 },
                 "expand_dims",
-                [axis]( std::vector<unsigned long> const& shape ) noexcept
+                [axis]( std::vector<size_t> const& shape ) noexcept
                 {//shape calculator
-                    std::vector<unsigned long> ans = shape;
+                    std::vector<size_t> ans = shape;
                     //int offset = axis;
                     //if ( axis == -1 ) offset = ans.size();
                     int const offset = (axis == -1) ? shape.size() : axis;
@@ -1287,18 +1287,18 @@ namespace ceras
                     return ans.reshape( input.shape() );
                 },
                 "squeeze",
-                [=]( std::vector<unsigned long> const& shape ) noexcept
+                [=]( std::vector<size_t> const& shape ) noexcept
                 {
                     if ( -1 == axis )
                     {
-                        std::vector<unsigned long> ans;
-                        std::copy_if( shape.begin(), shape.end(), std::back_inserter( ans ), []( unsigned long n ){ return n != 1; } );
+                        std::vector<size_t> ans;
+                        std::copy_if( shape.begin(), shape.end(), std::back_inserter( ans ), []( size_t n ){ return n != 1; } );
                         if ( ans.size() > 0 )
                             return ans;
-                        return std::vector<unsigned long>{ {1UL,} };
+                        return std::vector<size_t>{ {1UL,} };
                     }
 
-                    std::vector<unsigned long> ans = shape;
+                    std::vector<size_t> ans = shape;
                     std::copy( ans.begin()+axis+1, ans.end(), ans.begin()+axis );
                     ans.resize( shape.size()-1 );
                     return ans;
@@ -1326,7 +1326,7 @@ namespace ceras
     /// auto ma = argmax( 1 )( a );
     /// @endcode
     ///
-    auto inline argmax( unsigned long axis=0 ) noexcept
+    auto inline argmax( size_t axis=0 ) noexcept
     {
         std::shared_ptr<std::any> forward_cache = std::make_shared<std::any>();
         std::shared_ptr<std::any> backward_cache = std::make_shared<std::any>();
@@ -1337,27 +1337,27 @@ namespace ceras
             (
                 [=]<Tensor Tsor>( Tsor const& input ) noexcept
                 {
-                    std::vector<unsigned long> const& shape = input.shape();
+                    std::vector<size_t> const& shape = input.shape();
                     better_assert( axis < shape.size(), fmt::format("axis {} is greater than the dimension of the input tensor shape {}", axis, shape) );
 
                     // calculate the output tensor shape
-                    std::vector<unsigned long> output_shape = shape;
+                    std::vector<size_t> output_shape = shape;
                     std::copy( output_shape.begin()+axis+1, output_shape.end(), output_shape.begin()+axis );
                     output_shape.resize( output_shape.size() - 1 );
                     Tsor& ans = context_cast<Tsor>( forward_cache );
                     ans.resize( output_shape );
 
                     //  viewing the input tensor as a 3D tensor, and viewing the output tensor as a 2D tensor
-                    unsigned long const bs = std::accumulate( shape.begin(), shape.begin()+axis, 1UL, []( unsigned long x, unsigned long y ){ return x*y; } );
-                    unsigned long const row = shape[axis];
-                    unsigned long const col = std::accumulate( shape.begin()+axis+1, shape.end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } );
+                    size_t const bs = std::accumulate( shape.begin(), shape.begin()+axis, 1UL, []( size_t x, size_t y ){ return x*y; } );
+                    size_t const row = shape[axis];
+                    size_t const col = std::accumulate( shape.begin()+axis+1, shape.end(), 1UL, []( size_t x, size_t y ){ return x*y; } );
                     auto cube_input = view_3d{ input.data(), bs, row, col };
                     auto matrix_output = view_2d{ ans.data(), bs, col };
 
                     for ( auto _bs : range( bs ) )
                         for ( auto _col : range( col ) )
                         {
-                            unsigned long mx_idx = 0;
+                            size_t mx_idx = 0;
                             auto mx = cube_input[_bs][0][_col];
                             for ( auto _row : range( row ) )
                             {
@@ -1379,9 +1379,9 @@ namespace ceras
                     return back_ans;
                 },
                 "argmax",
-                [axis]( std::vector<unsigned long> const& shape ) noexcept
+                [axis]( std::vector<size_t> const& shape ) noexcept
                 {
-                    std::vector<unsigned long> ans = shape;
+                    std::vector<size_t> ans = shape;
                     std::copy( ans.begin()+axis+1, ans.end(), ans.begin()+axis );
                     ans.resize( ans.size() - 1 );
                     return ans;
@@ -1409,7 +1409,7 @@ namespace ceras
     /// auto ma = argmin( 1 )( a );
     /// @endcode
     ///
-    auto inline argmin( unsigned long axis=0 ) noexcept
+    auto inline argmin( size_t axis=0 ) noexcept
     {
         return [=]<Expression Ex>( Ex const& ex ) noexcept
         {
@@ -1480,7 +1480,7 @@ namespace ceras
 
                 typedef typename Tsor::value_type value_type;
 
-                std::vector<unsigned long> const shape = tsor.shape();
+                std::vector<size_t> const shape = tsor.shape();
                 auto const[row, col] = std::make_tuple( shape[0], shape[1] );
                 view_2d<value_type> v_in{ tsor.data(), row, col };
 
@@ -1498,7 +1498,7 @@ namespace ceras
             {
                 typedef typename Tsor::value_type value_type;
 
-                std::vector<unsigned long> const shape = grad.shape();
+                std::vector<size_t> const shape = grad.shape();
                 auto const[row, col] = std::make_tuple( shape[0], shape[1] );
                 view_2d<value_type> v_in{ grad.data(), row, col };
 
@@ -1514,43 +1514,43 @@ namespace ceras
                 return back_ans;
             },
             "transpose",
-            []( std::vector<unsigned long> const& shape ) noexcept
+            []( std::vector<size_t> const& shape ) noexcept
             {
                 better_assert( shape.size() == 2, fmt::format( "expecting shape size of 2, but got {}", shape.size() ) );
-                return std::vector<unsigned long>{ {shape[1], shape[0]} };
+                return std::vector<size_t>{ {shape[1], shape[0]} };
             }
         )( ex );
     }
 
-    auto inline img2col( unsigned long const row_kernel, unsigned long col_kernel=-1,
-                         unsigned long const row_padding=0, unsigned long col_padding=0,
-                         unsigned long const row_stride=1, unsigned long const col_stride=1,
-                         unsigned long const row_dilation=1, unsigned long const col_dilation=1 ) noexcept
+    auto inline img2col( size_t const row_kernel, size_t col_kernel=-1,
+                         size_t const row_padding=0, size_t col_padding=0,
+                         size_t const row_stride=1, size_t const col_stride=1,
+                         size_t const row_dilation=1, size_t const col_dilation=1 ) noexcept
     {
-        if ( col_kernel == (unsigned long)-1 ) col_kernel = row_kernel;
+        if ( col_kernel == (size_t)-1 ) col_kernel = row_kernel;
 
         std::shared_ptr<std::vector<std::uint32_t>> s_index_record = std::make_shared<std::vector<std::uint32_t>>(); // col_img[idx] = img[index_record[idx]]  -- (-1) for zero padding
 
         auto img2col_forward = [s_index_record]<Tensor Tsor>
         (
             Tsor const& input_img, Tsor& output_col_mat,
-            unsigned long kernel_row, unsigned long kernel_col,
-            unsigned long padding_row, unsigned long padding_col,
-            unsigned long stride_row, unsigned long stride_col,
-            unsigned long dilation_row, unsigned long dilation_col
+            size_t kernel_row, size_t kernel_col,
+            size_t padding_row, size_t padding_col,
+            size_t stride_row, size_t stride_col,
+            size_t dilation_row, size_t dilation_col
         ) noexcept
         {
             typedef typename Tsor::value_type value_type;
             std::vector<std::uint32_t>& index_record = *s_index_record; //32 bit should be enough for memory address offeset
 
-            std::vector<unsigned long> input_shape = input_img.shape();
+            std::vector<size_t> input_shape = input_img.shape();
             better_assert( input_shape.size() == 4, "Expecting a 4D tensor." );
             auto const [BS, R, C, CH] = std::make_tuple( input_shape[0], input_shape[1], input_shape[2], input_shape[3] );
 
-            unsigned long const output_row = ( R + 2 * padding_row - ( dilation_row * (kernel_row - 1) + 1 ) ) / stride_row + 1;
-            unsigned long const output_col = ( C + 2 * padding_col - ( dilation_col * (kernel_col - 1) + 1 ) ) / stride_col + 1;
-            unsigned long const output_column_matrix_row = kernel_row * kernel_col * CH;
-            unsigned long const output_column_matrix_col = BS * output_row * output_col;
+            size_t const output_row = ( R + 2 * padding_row - ( dilation_row * (kernel_row - 1) + 1 ) ) / stride_row + 1;
+            size_t const output_col = ( C + 2 * padding_col - ( dilation_col * (kernel_col - 1) + 1 ) ) / stride_col + 1;
+            size_t const output_column_matrix_row = kernel_row * kernel_col * CH;
+            size_t const output_column_matrix_col = BS * output_row * output_col;
 
             output_col_mat.resize( {output_column_matrix_row, output_column_matrix_col} );
 
@@ -1641,16 +1641,16 @@ namespace ceras
                     return Tsor{back_grad};
                 },
                 "img2col",
-                [=]( std::vector<unsigned long> const& shape ) noexcept
+                [=]( std::vector<size_t> const& shape ) noexcept
                 {
                     better_assert( shape.size() == 4, fmt::format("Expecting a 4D tensor, but got {}.", shape.size()) );
                     auto const [BS, R, C, CH] = std::make_tuple( shape[0], shape[1], shape[2], shape[3] );
 
-                    unsigned long const output_row = ( R + 2 * row_padding - ( row_dilation * (row_kernel - 1) + 1 ) ) / row_stride + 1;
-                    unsigned long const output_col = ( C + 2 * col_padding - ( col_dilation * (col_kernel - 1) + 1 ) ) / col_stride + 1;
-                    unsigned long const output_column_matrix_row = row_kernel * col_kernel * CH;
-                    unsigned long const output_column_matrix_col = BS * output_row * output_col;
-                    return std::vector<unsigned long>{ {output_column_matrix_row, output_column_matrix_col} };
+                    size_t const output_row = ( R + 2 * row_padding - ( row_dilation * (row_kernel - 1) + 1 ) ) / row_stride + 1;
+                    size_t const output_col = ( C + 2 * col_padding - ( col_dilation * (col_kernel - 1) + 1 ) ) / col_stride + 1;
+                    size_t const output_column_matrix_row = row_kernel * col_kernel * CH;
+                    size_t const output_column_matrix_col = BS * output_row * output_col;
+                    return std::vector<size_t>{ {output_column_matrix_row, output_column_matrix_col} };
                 },
                 make_argumented_operator_serializer( row_kernel, col_kernel, row_padding, col_padding, row_stride, col_stride, row_dilation, col_dilation )
             )( ex );
@@ -1659,9 +1659,9 @@ namespace ceras
 
     auto inline conv2d
     (
-        unsigned long row_input, unsigned long col_input,
-        unsigned long const row_stride=1, unsigned long const col_stride=1,
-        unsigned long const row_dilation=1, unsigned long const col_dilation=1,
+        size_t row_input, size_t col_input,
+        size_t const row_stride=1, size_t const col_stride=1,
+        size_t const row_dilation=1, size_t const col_dilation=1,
         std::string const& padding="valid"
     ) noexcept
     {
@@ -1673,24 +1673,24 @@ namespace ceras
         //
         return [row_input, col_input, row_stride, col_stride, row_dilation, col_dilation, padding ]<Expression Ex, Expression Ey>( Ex const& lhs_ex, Ey const& rhs_ex ) noexcept
         {
-            std::vector<unsigned long> const& shape = rhs_ex.shape();
+            std::vector<size_t> const& shape = rhs_ex.shape();
             better_assert( shape.size() == 4 );
             auto const[new_channel, row_kernel, col_kernel, channel] = std::make_tuple( shape[0], shape[1], shape[2], shape[3] );
             //TODO: optimization in case of small kernels of (1, 1), (3, 3)
-            unsigned long row_padding = 0;
-            unsigned long col_padding = 0;
+            size_t row_padding = 0;
+            size_t col_padding = 0;
             if ( padding == "same" )
             {
-                unsigned long const row_padding_total = (row_kernel + (row_kernel - 1) * (row_dilation - 1) - row_stride);
+                size_t const row_padding_total = (row_kernel + (row_kernel - 1) * (row_dilation - 1) - row_stride);
                 better_assert( !(row_padding_total & 0x1), "Expecting total row padding to be even, but got ", row_padding_total, " With row input ", row_input, " and row_stride ", row_stride );
-                unsigned long const col_padding_total = (col_kernel + (col_kernel - 1) * (col_dilation - 1) - col_stride);
+                size_t const col_padding_total = (col_kernel + (col_kernel - 1) * (col_dilation - 1) - col_stride);
                 better_assert( !(col_padding_total & 0x1), "Expecting total col padding to be even, but got ", col_padding_total );
                 row_padding = ((row_kernel&1)+row_padding_total) >> 1;
                 col_padding = ((col_kernel&1)+col_padding_total) >> 1;
             }
 
-            unsigned long const row_output = ( row_input + 2 * row_padding - ( row_dilation * (row_kernel - 1) + 1 ) ) / row_stride + 1;
-            unsigned long const col_output = ( col_input + 2 * row_padding - ( col_dilation * (col_kernel - 1) + 1 ) ) / col_stride + 1;
+            size_t const row_output = ( row_input + 2 * row_padding - ( row_dilation * (row_kernel - 1) + 1 ) ) / row_stride + 1;
+            size_t const col_output = ( col_input + 2 * row_padding - ( col_dilation * (col_kernel - 1) + 1 ) ) / col_stride + 1;
 
             auto lhs_ex_as_col = img2col(row_kernel, col_kernel, row_padding, col_padding, row_stride, col_stride, row_dilation, col_dilation)( lhs_ex ); // [BS, R, C, CH] ==> [r*c*CH, BS*new_row*new_col]
 
@@ -1712,8 +1712,8 @@ namespace ceras
     ///
     auto constexpr inline general_conv2d
     (
-        unsigned long const row_stride=1, unsigned long const col_stride=1,
-        unsigned long const row_dilation=1, unsigned long const col_dilation=1,
+        size_t const row_stride=1, size_t const col_stride=1,
+        size_t const row_dilation=1, size_t const col_dilation=1,
         std::string const& padding="valid"
     ) noexcept
     {
@@ -1729,21 +1729,21 @@ namespace ceras
             better_assert( lhs_shape.size() == 4, fmt::format( "expecting lhs_shape size of 4, but got {}", lhs_shape.size() ) );
             auto [_bs, row_input, col_input, _ch] = std::make_tuple( lhs_shape[0], lhs_shape[1], lhs_shape[2], lhs_shape[3] );
 
-            std::vector<unsigned long> const& shape = rhs_ex.shape();
+            std::vector<size_t> const& shape = rhs_ex.shape();
             better_assert( shape.size() == 4 );
             auto const[new_channel, row_kernel, col_kernel, channel] = std::make_tuple( shape[0], shape[1], shape[2], shape[3] );
-            unsigned long row_padding = 0;
-            unsigned long col_padding = 0;
+            size_t row_padding = 0;
+            size_t col_padding = 0;
             if ( padding == "same" )
             {
-                unsigned long const row_padding_total = (row_kernel + (row_kernel - 1) * (row_dilation - 1) - row_stride);
-                unsigned long const col_padding_total = (col_kernel + (col_kernel - 1) * (col_dilation - 1) - col_stride);
+                size_t const row_padding_total = (row_kernel + (row_kernel - 1) * (row_dilation - 1) - row_stride);
+                size_t const col_padding_total = (col_kernel + (col_kernel - 1) * (col_dilation - 1) - col_stride);
                 row_padding = ((row_kernel&1)+row_padding_total) >> 1;
                 col_padding = ((col_kernel&1)+col_padding_total) >> 1;
             }
 
-            unsigned long const row_output = ( row_input + 2 * row_padding - ( row_dilation * (row_kernel - 1) + 1 ) ) / row_stride + 1;
-            unsigned long const col_output = ( col_input + 2 * row_padding - ( col_dilation * (col_kernel - 1) + 1 ) ) / col_stride + 1;
+            size_t const row_output = ( row_input + 2 * row_padding - ( row_dilation * (row_kernel - 1) + 1 ) ) / row_stride + 1;
+            size_t const col_output = ( col_input + 2 * row_padding - ( col_dilation * (col_kernel - 1) + 1 ) ) / col_stride + 1;
 
             auto lhs_ex_as_col = img2col(row_kernel, col_kernel, row_padding, col_padding, row_stride, col_stride, row_dilation, col_dilation)( lhs_ex ); // [BS, R, C, CH] ==> [r*c*CH, BS*new_row*new_col]
 
@@ -1764,17 +1764,17 @@ namespace ceras
     ///
     auto inline conv2d_tranpose_intermediate
     (
-        unsigned long const row_kernel, unsigned long const col_kernel,
-        unsigned long const row_stride=1, unsigned long const col_stride=1,
+        size_t const row_kernel, size_t const col_kernel,
+        size_t const row_stride=1, size_t const col_stride=1,
         std::string const& padding="valid"
     ) noexcept
     {
         std::shared_ptr<std::any> forward_cache = std::make_shared<std::any>();
         std::shared_ptr<std::any> backward_cache = std::make_shared<std::any>();
 
-        auto shape_calculator = [=]( std::vector<unsigned long> const& old_shape )
+        auto shape_calculator = [=]( std::vector<size_t> const& old_shape )
         {
-            std::vector<unsigned long> new_shape = old_shape;
+            std::vector<size_t> new_shape = old_shape;
             new_shape[1] *= row_stride;
             new_shape[2] *= col_stride;
             if (padding == std::string("valid"))
@@ -1792,11 +1792,11 @@ namespace ceras
                 [=]<Tensor Tsor>( Tsor const& input ) noexcept
                 {
                     typedef typename Tsor::value_type value_type;
-                    std::vector<unsigned long> const& old_shape = input.shape();
+                    std::vector<size_t> const& old_shape = input.shape();
                     auto [_bs, old_row, old_col, _ch] = std::make_tuple( old_shape[0], old_shape[1], old_shape[2], old_shape[3] );
                     view_4d<value_type const> input_4d{ input.data(), _bs, old_row, old_col, _ch };
 
-                    std::vector<unsigned long> const& new_shape = shape_calculator( old_shape );
+                    std::vector<size_t> const& new_shape = shape_calculator( old_shape );
                     auto [bs, new_row, new_col, ch] = std::make_tuple( new_shape[0], new_shape[1], new_shape[2], new_shape[3] );
 
                     auto ans = context_cast<Tsor>( forward_cache );
@@ -1804,8 +1804,8 @@ namespace ceras
                     std::fill( ans.begin(), ans.end(), value_type{0} ); // just in case not initialized
                     view_4d<value_type> output_4d{ ans.data(), bs, new_row, new_col, ch };
 
-                    unsigned long row_offset = (padding == std::string{"valid"}) ? (row_kernel-1) : 0;
-                    unsigned long col_offset = (padding == std::string{"valid"}) ? (col_kernel-1) : 0;
+                    size_t row_offset = (padding == std::string{"valid"}) ? (row_kernel-1) : 0;
+                    size_t col_offset = (padding == std::string{"valid"}) ? (col_kernel-1) : 0;
 
                     for ( auto bs_index : range( bs ) )
                         for ( auto row_index : range( old_row ) )
@@ -1819,18 +1819,18 @@ namespace ceras
                 [=]<Tensor Tsor>( Tsor const& input, Tsor const& output, Tsor const& grad ) noexcept
                 {
                     typedef typename Tsor::value_type value_type;
-                    std::vector<unsigned long> const& input_shape = input.shape();
+                    std::vector<size_t> const& input_shape = input.shape();
                     auto [bs, i_row, i_col, ch] = std::make_tuple( input_shape[0], input_shape[1], input_shape[2], input_shape[3] );
                     auto back_ans = context_cast<Tsor>( backward_cache );
                     back_ans.resize( input_shape );
                     view_4d<value_type> b_4d{ back_ans.data(), bs, i_row, i_col, ch };
 
-                    std::vector<unsigned long> const& output_shape = grad.shape();
+                    std::vector<size_t> const& output_shape = grad.shape();
                     auto [_bs, o_row, o_col, _ch] = std::make_tuple( output_shape[0], output_shape[1], output_shape[2], output_shape[3] );
                     view_4d<value_type> g_4d{ grad.data(), bs, o_row, o_col, ch };
 
-                    unsigned long row_offset = (padding == std::string{"valid"}) ? (row_kernel-1) : 0;
-                    unsigned long col_offset = (padding == std::string{"valid"}) ? (col_kernel-1) : 0;
+                    size_t row_offset = (padding == std::string{"valid"}) ? (row_kernel-1) : 0;
+                    size_t col_offset = (padding == std::string{"valid"}) ? (col_kernel-1) : 0;
 
                     for ( auto bs_index : range( bs ) )
                         for ( auto row_index : range( i_row ) )
@@ -1854,9 +1854,9 @@ namespace ceras
     ///
     auto inline conv2d_transpose
     (
-        unsigned long const row_kernel, unsigned long const col_kernel,
-        unsigned long const row_stride=1, unsigned long const col_stride=1,
-        unsigned long const row_dilation=1, unsigned long const col_dilation=1,
+        size_t const row_kernel, size_t const col_kernel,
+        size_t const row_stride=1, size_t const col_stride=1,
+        size_t const row_dilation=1, size_t const col_dilation=1,
         std::string const& padding="valid"
     ) noexcept
     {
@@ -1960,7 +1960,7 @@ namespace ceras
 
             auto make_forward() const noexcept
             {
-                return  []( unsigned long stride, std::shared_ptr<std::any> mask, std::shared_ptr<std::any> forward_cache ) noexcept
+                return  []( size_t stride, std::shared_ptr<std::any> mask, std::shared_ptr<std::any> forward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input ) noexcept
                     {
@@ -1971,7 +1971,7 @@ namespace ceras
                         mask__.resize( input.shape() );
 
 
-                        std::vector<unsigned long> shape = input.shape();
+                        std::vector<size_t> shape = input.shape();
                         auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
                         Tsor input_ = input;
                         view_4d<value_type> ts{ input_.data(), batch_size, row, col, channel };
@@ -1987,8 +1987,8 @@ namespace ceras
                                 for ( auto c : range(col/stride) ) // col for t1
                                     for ( auto ch : range(channel) )
                                     {
-                                        unsigned long current_row_max = r * stride;
-                                        unsigned long current_col_max = c * stride;
+                                        size_t current_row_max = r * stride;
+                                        size_t current_col_max = c * stride;
                                         for ( auto _r : range( (r*stride), ((r*stride)+stride) ) ) // row for ts
                                             for ( auto _c : range( (c*stride), ((c*stride)+stride) ) ) // col for ts
                                             {
@@ -2008,12 +2008,12 @@ namespace ceras
 
             auto make_backward() const noexcept
             {
-                return []( unsigned long stride, std::shared_ptr<std::any> mask, std::shared_ptr<std::any> backward_cache ) noexcept
+                return []( size_t stride, std::shared_ptr<std::any> mask, std::shared_ptr<std::any> backward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input, Tsor const&, Tsor const& grad ) noexcept
                     {
                         typedef typename Tsor::value_type value_type;
-                        std::vector<unsigned long> const& shape = input.shape();
+                        std::vector<size_t> const& shape = input.shape();
                         auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
 
                         Tsor& mask__ = std::any_cast<Tsor&>( *mask );
@@ -2044,7 +2044,7 @@ namespace ceras
 
 
     // comment: maybe using function 'reduce' to reduce the cod complexity? at a price of performance?
-    inline auto max_pooling_2d( unsigned long stride ) noexcept
+    inline auto max_pooling_2d( size_t stride ) noexcept
     {
         better_assert( stride > 1, "Expecting max_pooling_2d stride greater than 1, but got ", stride );
 
@@ -2059,17 +2059,17 @@ namespace ceras
                 max_pooling_2d_context{}.make_forward()( stride, mask, forward_cache ),
                 max_pooling_2d_context{}.make_backward()( stride, mask, backward_cache ),
                 "max_pooling_2d",
-                [=]( std::vector<unsigned long> const& shape ) noexcept
+                [=]( std::vector<size_t> const& shape ) noexcept
                 {
                     better_assert( shape.size()==4, fmt::format( "expecting shape size of 4, but got {}", shape.size() ) );
-                    return std::vector<unsigned long>{ {shape[0], shape[1]/stride, shape[2]/stride, shape[3]} };
+                    return std::vector<size_t>{ {shape[0], shape[1]/stride, shape[2]/stride, shape[3]} };
                 },
                 make_argumented_operator_serializer( stride )
             )( ex );
         };
     }
 
-    inline auto average_pooling_2d( unsigned long stride ) noexcept
+    inline auto average_pooling_2d( size_t stride ) noexcept
     {
         better_assert( stride > 1, "Expecting average_pooling_2d stride greater than 1, but got ", stride );
 
@@ -2085,7 +2085,7 @@ namespace ceras
                     typedef typename Tsor::value_type value_type;
                     better_assert( input.ndim() == 4, "Expecting a 4D tensor, but got ", input.ndim() );
 
-                    std::vector<unsigned long> shape = input.shape();
+                    std::vector<size_t> shape = input.shape();
                     auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
                     Tsor input_ = input;
                     view_4d<value_type> ts{ input_.data(), batch_size, row, col, channel };
@@ -2109,7 +2109,7 @@ namespace ceras
                 [stride, backward_cache]<Tensor Tsor>( Tsor const& input, Tsor const&, Tsor const& grad ) noexcept
                 {
                     typedef typename Tsor::value_type value_type;
-                    std::vector<unsigned long> const& shape = input.shape();
+                    std::vector<size_t> const& shape = input.shape();
                     auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
 
                     Tsor& ans = context_cast<Tsor>( backward_cache );
@@ -2129,10 +2129,10 @@ namespace ceras
                     return ans;
                 },
                 "average_pooling_2d",
-                [=]( std::vector<unsigned long> const& shape ) noexcept
+                [=]( std::vector<size_t> const& shape ) noexcept
                 {
                     better_assert( shape.size()==4, fmt::format( "expecting shape size of 4, but got {}", shape.size() ) );
-                    return std::vector<unsigned long>{ {shape[0], shape[1]/stride, shape[2]/stride, shape[3]} };
+                    return std::vector<size_t>{ {shape[0], shape[1]/stride, shape[2]/stride, shape[3]} };
                 },
                 make_argumented_operator_serializer( stride )
             )( ex );
@@ -2145,14 +2145,14 @@ namespace ceras
         {
             auto make_forward() const noexcept
             {
-                return []( unsigned long stride, std::shared_ptr<std::any> forward_cache ) noexcept
+                return []( size_t stride, std::shared_ptr<std::any> forward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input ) noexcept
                     {
                         typedef typename Tsor::value_type value_type;
                         better_assert( input.ndim() == 4, "Expecting a 4D tensor, but got ", input.ndim() );
 
-                        std::vector<unsigned long> shape = input.shape();
+                        std::vector<size_t> shape = input.shape();
                         auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
                         Tsor input_ = input;
                         view_4d<value_type> ts{ input_.data(), batch_size, row, col, channel };
@@ -2177,12 +2177,12 @@ namespace ceras
 
             auto make_backward() const noexcept
             {
-                return []( unsigned long stride, std::shared_ptr<std::any> backward_cache ) noexcept
+                return []( size_t stride, std::shared_ptr<std::any> backward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input, Tsor const&, Tsor const& grad ) noexcept
                     {
                         typedef typename Tsor::value_type value_type;
-                        std::vector<unsigned long> const& shape = input.shape();
+                        std::vector<size_t> const& shape = input.shape();
                         auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
 
                         Tsor& ans = context_cast<Tsor>( backward_cache );
@@ -2209,7 +2209,7 @@ namespace ceras
 
     } // anonymous namespace
 
-    inline auto up_sampling_2d( unsigned long stride ) noexcept
+    inline auto up_sampling_2d( size_t stride ) noexcept
     {
         better_assert( stride > 1, "Expecting up_sampling_pooling_2d stride greater than 1, but got ", stride );
 
@@ -2223,10 +2223,10 @@ namespace ceras
                 up_sampling_2d_context{}.make_forward()( stride, forward_cache ),
                 up_sampling_2d_context{}.make_backward()( stride, backward_cache ),
                 "up_sampling_2d",
-                [=]( std::vector<unsigned long> const& shape ) noexcept
+                [=]( std::vector<size_t> const& shape ) noexcept
                 {
                     better_assert( shape.size()==4, fmt::format( "expecting shape size of 4, but got {}", shape.size() ) );
-                    return std::vector<unsigned long>{ {shape[0], shape[1]*stride, shape[2]*stride, shape[3]} };
+                    return std::vector<size_t>{ {shape[0], shape[1]*stride, shape[2]*stride, shape[3]} };
                 },
                 make_argumented_operator_serializer( stride )
             )( ex );
@@ -2234,7 +2234,7 @@ namespace ceras
     }
 
     // an alias name
-    inline auto upsampling_2d( unsigned long stride ) noexcept
+    inline auto upsampling_2d( size_t stride ) noexcept
     {
         return up_sampling_2d( stride );
     }
@@ -2262,9 +2262,9 @@ namespace ceras
                     typedef typename Tsor::value_type value_type;
                     //typedef typename Tsor::allocator allocator;
 
-                    std::vector<unsigned long> const& shape = input.shape();
-                    unsigned long const channels = *(shape.rbegin());
-                    unsigned long const rest_dims = input.size() / channels;
+                    std::vector<size_t> const& shape = input.shape();
+                    size_t const channels = *(shape.rbegin());
+                    size_t const rest_dims = input.size() / channels;
 
                     view_2d<value_type> input_{ input.data(), rest_dims, channels };
 
@@ -2350,9 +2350,9 @@ namespace ceras
                     typedef typename Tsor::value_type value_type;
                     Tsor& variance = context_extract<Tsor>( variance_cache );
 
-                    std::vector<unsigned long> const& shape = input.shape();
-                    unsigned long const channels = *(shape.rbegin());
-                    unsigned long const rest_dims = input.size() / channels;
+                    std::vector<size_t> const& shape = input.shape();
+                    size_t const channels = *(shape.rbegin());
+                    size_t const rest_dims = input.size() / channels;
 
                     Tsor& ans = context_cast<Tsor>( backward_cache, zeros_like( input ) );
                     view_2d<value_type> ans_{ans.data(), rest_dims, channels };
@@ -2392,7 +2392,7 @@ namespace ceras
     template< Expression Lhs_Expression, Expression Rhs_Expression >
     auto constexpr concatenate( Lhs_Expression const& lhs_ex, Rhs_Expression const& rhs_ex ) noexcept
     {
-        return [&]( unsigned long axe = -1 ) noexcept
+        return [&]( size_t axe = -1 ) noexcept
         {
             return make_binary_operator
             (
@@ -2410,24 +2410,24 @@ namespace ceras
                                     " with lhs dim is ", l_ans.ndim(), "  and rhs dim is ", r_ans.ndim() );
 
                     // 2D view of grad
-                    unsigned long const ax = (axe == (unsigned long)(-1)) ? grad.ndim()-1 : axe;
-                    unsigned long const g_col = std::accumulate( grad.shape().begin()+ax, grad.shape().end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } );
-                    unsigned long const g_row = grad.size() / g_col;
+                    size_t const ax = (axe == (size_t)(-1)) ? grad.ndim()-1 : axe;
+                    size_t const g_col = std::accumulate( grad.shape().begin()+ax, grad.shape().end(), 1UL, []( size_t x, size_t y ){ return x*y; } );
+                    size_t const g_row = grad.size() / g_col;
                     view_2d<value_type> v_g{ grad.data(), g_row, g_col };
 
                     // 2D view of l_ans
-                    unsigned long const lhs_row = g_row;
-                    unsigned long const lhs_col = lhs_input.size() / lhs_row;
+                    size_t const lhs_row = g_row;
+                    size_t const lhs_col = lhs_input.size() / lhs_row;
                     view_2d<value_type> v_l{ l_ans.data(), lhs_row, lhs_col };
 
                     // 2D view of r_ans
-                    unsigned long const rhs_row = g_row;
-                    unsigned long const rhs_col = rhs_input.size() / rhs_row;
+                    size_t const rhs_row = g_row;
+                    size_t const rhs_col = rhs_input.size() / rhs_row;
                     view_2d<value_type> v_r{ r_ans.data(), rhs_row, rhs_col };
 
                     better_assert( g_col == lhs_col + rhs_col, "last dimension not agree" );
 
-                    for ( unsigned long idx = 0; idx != g_row; ++idx )
+                    for ( size_t idx = 0; idx != g_row; ++idx )
                     {
                         std::copy( v_g[idx], v_g[idx]+lhs_col, v_l[idx] );          // fill idx-th row of 'v_l'
                         std::copy( v_g[idx]+lhs_col, v_g[idx]+g_col, v_r[idx] );    // fill idx-th row of 'v_r'
@@ -2436,11 +2436,11 @@ namespace ceras
                     return std::make_tuple( l_ans, r_ans );
                 },
                 "concatenate",
-                [axe]( std::vector<unsigned long> const& l, std::vector<unsigned long> const& r ) noexcept
+                [axe]( std::vector<size_t> const& l, std::vector<size_t> const& r ) mutable noexcept
                 {
                     better_assert( l.size() == r.size(), fmt::format( "expecting of same size, but lhs.size is {} and rhs.size is {}.", l.size(), r.size() ) );
                     // more assertion ?
-                    std::vector<unsigned long> ans = l;
+                    std::vector<size_t> ans = l;
                     if ( axe > ans.size() ) axe = ans.size() - 1;
                     ans[axe] += r[axe];
                     return ans;
@@ -2451,7 +2451,7 @@ namespace ceras
     }
 
     // just to keep this interface agrees with Keras
-    inline auto concatenate( unsigned long axe = -1 )
+    inline auto concatenate( size_t axe = -1 )
     {
 
         return [=]< Expression Lhs_Expression, Expression Rhs_Expression >( Lhs_Expression const& lhs_ex, Rhs_Expression const& rhs_ex ) noexcept
@@ -2468,7 +2468,7 @@ namespace ceras
     }
 
     // alias of 'concatenate'
-    inline auto concat( unsigned long axe = -1 )
+    inline auto concat( size_t axe = -1 )
     {
         return concatenate( axe );
     }
@@ -2747,7 +2747,7 @@ namespace ceras
         {
             auto make_forward() const noexcept
             {
-                return []( unsigned long top, unsigned long bottom, unsigned long left, unsigned long right, std::shared_ptr<std::any> forward_cache ) noexcept
+                return []( size_t top, size_t bottom, size_t left, size_t right, std::shared_ptr<std::any> forward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input ) noexcept
                     {
@@ -2755,7 +2755,7 @@ namespace ceras
                         better_assert( input.ndim() == 4, "Expecting a 4D tensor, but got ", input.ndim() );
 
                         // 4D view of input tensor
-                        std::vector<unsigned long> shape = input.shape();
+                        std::vector<size_t> shape = input.shape();
                         auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
                         Tsor input_ = input;
                         view_4d<value_type> ts{ input_.data(), batch_size, row, col, channel };
@@ -2778,12 +2778,12 @@ namespace ceras
 
             auto make_backward() const noexcept
             {
-                return []( unsigned long top, unsigned long bottom, unsigned long left, unsigned long right, std::shared_ptr<std::any> backward_cache ) noexcept
+                return []( size_t top, size_t bottom, size_t left, size_t right, std::shared_ptr<std::any> backward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input, Tsor const&, Tsor const& grad ) noexcept
                     {
                         typedef typename Tsor::value_type value_type;
-                        std::vector<unsigned long> const& shape = input.shape();
+                        std::vector<size_t> const& shape = input.shape();
                         auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
 
                         Tsor& ans = context_cast<Tsor>( backward_cache );
@@ -2820,10 +2820,10 @@ namespace ceras
     /// auto d = zero_padding_2d( {8, 4, 2, 1} )( a ); // shape for d is (8+16+4, 2+16+1, 3)
     /// \endcode
     ///
-    inline auto zero_padding_2d( std::vector<unsigned long> const& padding ) noexcept
+    inline auto zero_padding_2d( std::vector<size_t> const& padding ) noexcept
     {
         // extracting paddings
-        unsigned long top, bottom, left, right;
+        size_t top, bottom, left, right;
         if ( padding.size() == 1 )
             std::tie( top, bottom, left, right ) = std::make_tuple( padding[0], padding[0], padding[0], padding[0] );
         else if (padding.size() == 2 )
@@ -2850,7 +2850,7 @@ namespace ceras
                 zero_padding_2d_context{}.make_forward()( top, bottom, left, right, forward_cache ),
                 zero_padding_2d_context{}.make_backward()( top, bottom, left, right, backward_cache ),
                 "zero_padding_2d",
-                [=]( std::vector<unsigned long> const& shape ) noexcept { return std::vector<unsigned long>{ {shape[0], shape[1]+top+bottom, shape[2]+left+right, shape[3]} }; },
+                [=]( std::vector<size_t> const& shape ) noexcept { return std::vector<size_t>{ {shape[0], shape[1]+top+bottom, shape[2]+left+right, shape[3]} }; },
                 make_argumented_operator_serializer( padding )
             )( ex );
         };
@@ -2864,7 +2864,7 @@ namespace ceras
         {
             auto make_forward() const noexcept
             {
-                return []( unsigned long top, unsigned long bottom, unsigned long left, unsigned long right, std::shared_ptr<std::any> forward_cache ) noexcept
+                return []( size_t top, size_t bottom, size_t left, size_t right, std::shared_ptr<std::any> forward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input ) noexcept
                     {
@@ -2873,7 +2873,7 @@ namespace ceras
                         // check shape, not too large
 
                         // 4D view of input tensor
-                        std::vector<unsigned long> shape = input.shape();
+                        std::vector<size_t> shape = input.shape();
                         auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
                         Tsor input_ = input;
                         view_4d<value_type> ts{ input_.data(), batch_size, row, col, channel };
@@ -2899,12 +2899,12 @@ namespace ceras
 
             auto make_backward() const noexcept
             {
-                return []( unsigned long top, unsigned long bottom, unsigned long left, unsigned long right, std::shared_ptr<std::any> backward_cache ) noexcept
+                return []( size_t top, size_t bottom, size_t left, size_t right, std::shared_ptr<std::any> backward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input, Tsor const&, Tsor const& grad ) noexcept
                     {
                         typedef typename Tsor::value_type value_type;
-                        std::vector<unsigned long> const& shape = grad.shape();
+                        std::vector<size_t> const& shape = grad.shape();
                         auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
 
                         Tsor& ans = context_cast<Tsor>( backward_cache );
@@ -2941,10 +2941,10 @@ namespace ceras
     /// auto d = cropping_2d( {8, 4, 2, 1} )( a ); // shape for d is (32-8-4, 32-2-1, 3)
     /// \endcode
     ///
-    inline auto cropping_2d( std::vector<unsigned long> const& padding ) noexcept
+    inline auto cropping_2d( std::vector<size_t> const& padding ) noexcept
     {
         // extracting paddings
-        unsigned long top, bottom, left, right;
+        size_t top, bottom, left, right;
         if ( padding.size() == 1 )
             std::tie( top, bottom, left, right ) = std::make_tuple( padding[0], padding[0], padding[0], padding[0] );
         else if (padding.size() == 2 )
@@ -2971,9 +2971,9 @@ namespace ceras
                 cropping_2d_context{}.make_forward()( top, bottom, left, right, forward_cache ),
                 cropping_2d_context{}.make_backward()( top, bottom, left, right, backward_cache ),
                 "cropping_2d",
-                [=]( std::vector<unsigned long> const& shape ) noexcept
+                [=]( std::vector<size_t> const& shape ) noexcept
                 {
-                    return std::vector<unsigned long>{ {shape[0], shape[1]-top-bottom, shape[2]-left-right, shape[3]} };
+                    return std::vector<size_t>{ {shape[0], shape[1]-top-bottom, shape[2]-left-right, shape[3]} };
                 },
                 make_argumented_operator_serializer( padding )
             )( ex );
@@ -2984,7 +2984,7 @@ namespace ceras
     //namespace
     //{
 
-        inline auto detailed_sliding_2d( unsigned long const pixels, std::shared_ptr<std::any> shift_cache,
+        inline auto detailed_sliding_2d( size_t const pixels, std::shared_ptr<std::any> shift_cache,
                                          std::shared_ptr<std::any> forward_cache, std::shared_ptr<std::any> backward_cache) noexcept
         {
             return [=]<Expression Ex>( Ex const& ex ) noexcept // <- the output has been zero-padded by n pixels
@@ -2997,7 +2997,7 @@ namespace ceras
                             return tsor;
 
                         typedef typename Tsor::value_type value_type;
-                        std::vector<unsigned long> const& shape = tsor.shape();
+                        std::vector<size_t> const& shape = tsor.shape();
                         auto const[batch_size, row, col, channel] = std::make_tuple(shape[0], shape[1], shape[2], shape[3]);
                         view_4d vi{tsor.data(), batch_size, row, col, channel};
 
@@ -3038,7 +3038,7 @@ namespace ceras
                     [=]<Tensor Tsor>( Tsor const&, Tsor const&, Tsor const& grad ) noexcept
                     {
                         typedef typename Tsor::value_type value_type;
-                        std::vector<unsigned long> const& shape = grad.shape();
+                        std::vector<size_t> const& shape = grad.shape();
                         auto const[batch_size, row, col, channel] = std::make_tuple( shape[0], shape[1], shape[2], shape[3] );
                         view_4d vi{grad.data(), batch_size, row, col, channel};
                         tensor<long> shifts = context_cast<tensor<long>>( shift_cache );
@@ -3076,7 +3076,7 @@ namespace ceras
 
     //} // anonymous namespace
 
-    inline auto sliding_2d( unsigned long pixels ) noexcept
+    inline auto sliding_2d( size_t pixels ) noexcept
     {
         std::shared_ptr<std::any> shift_cache = std::make_shared<std::any>();
         std::shared_ptr<std::any> forward_cache = std::make_shared<std::any>();
@@ -3094,19 +3094,19 @@ namespace ceras
         {
             auto make_forward() const noexcept
             {
-                return []( unsigned long repeats, unsigned long axis, std::shared_ptr<std::any> forward_cache ) noexcept
+                return []( size_t repeats, size_t axis, std::shared_ptr<std::any> forward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input ) noexcept
                     {
                         if ( 1UL == repeats ) return input;
-                        unsigned long const ax = std::min( axis, input.shape().size()-1 );
+                        size_t const ax = std::min( axis, input.shape().size()-1 );
 
                         auto const& shape = input.shape();
-                        unsigned long const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } );
-                        unsigned long const iterations = std::accumulate( shape.begin(), shape.begin()+ax+1, 1UL, []( unsigned long x, unsigned long y ){ return x*y; } );
+                        size_t const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( size_t x, size_t y ){ return x*y; } );
+                        size_t const iterations = std::accumulate( shape.begin(), shape.begin()+ax+1, 1UL, []( size_t x, size_t y ){ return x*y; } );
 
                         // generate output tensor
-                        std::vector<unsigned long> output_shape = input.shape();
+                        std::vector<size_t> output_shape = input.shape();
                         output_shape[ax] *= repeats;
 
                         Tsor& ans = context_cast<Tsor>( forward_cache );
@@ -3128,16 +3128,16 @@ namespace ceras
 
             auto make_backward() const noexcept
             {
-                return []( unsigned long repeats, unsigned long axis, std::shared_ptr<std::any> backward_cache ) noexcept
+                return []( size_t repeats, size_t axis, std::shared_ptr<std::any> backward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input, Tsor const&, Tsor const& grad ) noexcept
                     {
                         if ( 1UL == repeats ) return grad;
-                        unsigned long const ax = std::min( axis, input.shape().size()-1 );
+                        size_t const ax = std::min( axis, input.shape().size()-1 );
 
                         auto const& shape = input.shape();
-                        unsigned long const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } );
-                        unsigned long const iterations = std::accumulate( shape.begin(), shape.begin()+ax+1, 1UL, []( unsigned long x, unsigned long y ){ return x*y; } );
+                        size_t const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( size_t x, size_t y ){ return x*y; } );
+                        size_t const iterations = std::accumulate( shape.begin(), shape.begin()+ax+1, 1UL, []( size_t x, size_t y ){ return x*y; } );
 
                         Tsor& ans = context_cast<Tsor>( backward_cache );
                         ans.resize( input.shape() );
@@ -3173,7 +3173,7 @@ namespace ceras
     /// auto bx = repeat( 2 )( a ); // <- output shape is ( 2, 3, 10 )
     /// \endcode
     ///
-    inline auto repeat( unsigned long repeats, unsigned long axis=-1 ) noexcept
+    inline auto repeat( size_t repeats, size_t axis=-1 ) noexcept
     {
         better_assert( repeats > 0, "repeat: repeats can not be zero." );
 
@@ -3187,9 +3187,9 @@ namespace ceras
                 repeat_context{}.make_forward()( repeats, axis, forward_cache ),
                 repeat_context{}.make_backward()( repeats, axis, backward_cache ),
                 "repeat",
-                [=]( std::vector<unsigned long> const& shape ) noexcept
+                [=]( std::vector<size_t> const& shape ) mutable noexcept
                 {
-                    std::vector<unsigned long> ans = shape;
+                    std::vector<size_t> ans = shape;
                     if ( axis >= ans.size() ) axis = ans.size()-1;
                     ans[axis] *= repeats;
                     return ans;
@@ -3207,27 +3207,27 @@ namespace ceras
         {
             auto make_forward() const noexcept
             {
-                return []( unsigned long axis, std::shared_ptr<std::any> forward_cache, std::shared_ptr<std::any> index_cache ) noexcept
+                return []( size_t axis, std::shared_ptr<std::any> forward_cache, std::shared_ptr<std::any> index_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input ) noexcept
                     {
-                        unsigned long const ax = std::min( axis, input.shape().size()-1 );
+                        size_t const ax = std::min( axis, input.shape().size()-1 );
 
                         // example: for an input tensor of shape ( 2, 3, 4, 5 ), and axis is 1
                         auto const& shape = input.shape(); // example: the shape is ( 2, 3, 4, 5 )
-                        unsigned long const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the stride is 20
-                        unsigned long const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the iterations is 2
-                        unsigned long const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
+                        size_t const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the stride is 20
+                        size_t const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the iterations is 2
+                        size_t const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
 
                         // generate output tensor
-                        std::vector<unsigned long> output_shape = input.shape(); // example: temporately being ( 2, 3, 4, 5 )
+                        std::vector<size_t> output_shape = input.shape(); // example: temporately being ( 2, 3, 4, 5 )
                         std::copy( output_shape.begin()+ax+1, output_shape.end(), output_shape.begin()+ax ); // example: temporately being ( 2, 4, 5, 5 )
                         output_shape.resize( output_shape.size() - 1 ); // example: output_shape is ( 2, 4, 5 )
 
                         Tsor& ans = context_cast<Tsor>( forward_cache );
                         ans.resize( output_shape ); // example: ans shape is ( 2, 4, 5 )
 
-                        tensor<unsigned long>& index = context_cast<tensor<unsigned long>>( index_cache );
+                        tensor<size_t>& index = context_cast<tensor<size_t>>( index_cache );
                         index.resize( output_shape ); // example: index shape is ( 2, 4, 5 )
 
                         // create 2D and 3D view
@@ -3244,7 +3244,7 @@ namespace ceras
                                 v2[it][st] = *min_itor;
 
                                 // record the minimal position offset with respect to the head of the column
-                                unsigned long const offset = std::distance( v3[it].col_begin(st), min_itor );
+                                size_t const offset = std::distance( v3[it].col_begin(st), min_itor );
                                 v_index[it][st] = offset;
                             }
 
@@ -3255,20 +3255,20 @@ namespace ceras
 
             auto make_backward() const noexcept
             {
-                return []( unsigned long axis, std::shared_ptr<std::any> backward_cache, std::shared_ptr<std::any> index_cache ) noexcept
+                return []( size_t axis, std::shared_ptr<std::any> backward_cache, std::shared_ptr<std::any> index_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input, Tsor const&, Tsor const& grad ) noexcept
                     {
-                        unsigned long const ax = std::min( axis, input.shape().size()-1 );
+                        size_t const ax = std::min( axis, input.shape().size()-1 );
 
                         // example: for an input tensor of shape ( 2, 3, 4, 5 ), and axis is 1
                         auto const& shape = input.shape(); // example: the shape is ( 2, 3, 4, 5 )
-                        unsigned long const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the stride is 20
-                        unsigned long const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the iterations is 2
-                        unsigned long const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
+                        size_t const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the stride is 20
+                        size_t const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the iterations is 2
+                        size_t const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
 
-                        std::vector<unsigned long> const& output_shape = grad.shape(); // example: output shape of ( 2, 4, 5 )
-                        tensor<unsigned long>& index = context_cast<tensor<unsigned long>>( index_cache );
+                        std::vector<size_t> const& output_shape = grad.shape(); // example: output shape of ( 2, 4, 5 )
+                        tensor<size_t>& index = context_cast<tensor<size_t>>( index_cache );
                         index.resize( output_shape ); // example: index shape is ( 2, 4, 5 )
 
                         Tsor& ans = context_cast<Tsor>( backward_cache );
@@ -3282,7 +3282,7 @@ namespace ceras
                         for ( auto it : range( iterations ) ) // example: range( 2 )
                             for ( auto st : range( stride ) ) // example: range( 20 )
                             {
-                                unsigned long const offset = v_index[it][st]; // get the offset from record
+                                size_t const offset = v_index[it][st]; // get the offset from record
                                 v3[it][offset][st] = v2[it][st]; // only the element at the minimal position has gradient back-propagated
                             }
 
@@ -3307,7 +3307,7 @@ namespace ceras
     /// auto b = reduce_min( )( a ); // <- output shape is ( 2, 3 )
     /// \endcode
     ///
-    inline auto reduce_min( unsigned long axis=-1 ) noexcept
+    inline auto reduce_min( size_t axis=-1 ) noexcept
     {
         std::shared_ptr<std::any> index_cache = std::make_shared<std::any>();
         std::shared_ptr<std::any> forward_cache = std::make_shared<std::any>();
@@ -3320,9 +3320,9 @@ namespace ceras
                 reduce_min_context{}.make_forward()( axis, forward_cache, index_cache ),
                 reduce_min_context{}.make_backward()( axis, backward_cache, index_cache ),
                 "reduce_min",
-                [=]( std::vector<unsigned long> const& shape ) noexcept
+                [=]( std::vector<size_t> const& shape ) mutable noexcept
                 {
-                    std::vector<unsigned long> ans = shape;
+                    std::vector<size_t> ans = shape;
                     if ( axis >= shape.size() ) axis = shape.size() - 1;
                     std::copy( ans.begin()+axis+1, ans.end(), ans.begin()+axis );
                     ans.resize( ans.size() - 1 );
@@ -3342,27 +3342,27 @@ namespace ceras
         {
             auto make_forward() const noexcept
             {
-                return []( unsigned long axis, std::shared_ptr<std::any> forward_cache, std::shared_ptr<std::any> index_cache ) noexcept
+                return []( size_t axis, std::shared_ptr<std::any> forward_cache, std::shared_ptr<std::any> index_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input ) noexcept
                     {
-                        unsigned long const ax = std::min( axis, input.shape().size()-1 );
+                        size_t const ax = std::min( axis, input.shape().size()-1 );
 
                         // example: for an input tensor of shape ( 2, 3, 4, 5 ), and axis is 1
                         auto const& shape = input.shape(); // example: the shape is ( 2, 3, 4, 5 )
-                        unsigned long const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the stride is 20
-                        unsigned long const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the iterations is 2
-                        unsigned long const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
+                        size_t const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the stride is 20
+                        size_t const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the iterations is 2
+                        size_t const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
 
                         // generate output tensor
-                        std::vector<unsigned long> output_shape = input.shape(); // example: temporately being ( 2, 3, 4, 5 )
+                        std::vector<size_t> output_shape = input.shape(); // example: temporately being ( 2, 3, 4, 5 )
                         std::copy( output_shape.begin()+ax+1, output_shape.end(), output_shape.begin()+ax ); // example: temporately being ( 2, 4, 5, 5 )
                         output_shape.resize( output_shape.size() - 1 ); // example: output_shape is ( 2, 4, 5 )
 
                         Tsor& ans = context_cast<Tsor>( forward_cache );
                         ans.resize( output_shape ); // example: ans shape is ( 2, 4, 5 )
 
-                        tensor<unsigned long>& index = context_cast<tensor<unsigned long>>( index_cache );
+                        tensor<size_t>& index = context_cast<tensor<size_t>>( index_cache );
                         index.resize( output_shape ); // example: index shape is ( 2, 4, 5 )
 
                         // create 2D and 3D view
@@ -3379,7 +3379,7 @@ namespace ceras
                                 v2[it][st] = *max_itor;
 
                                 // record the maximal position offset with respect to the head of the column
-                                unsigned long const offset = std::distance( v3[it].col_begin(st), max_itor );
+                                size_t const offset = std::distance( v3[it].col_begin(st), max_itor );
                                 v_index[it][st] = offset;
                             }
 
@@ -3390,20 +3390,20 @@ namespace ceras
 
             auto make_backward() const noexcept
             {
-                return []( unsigned long axis, std::shared_ptr<std::any> backward_cache, std::shared_ptr<std::any> index_cache ) noexcept
+                return []( size_t axis, std::shared_ptr<std::any> backward_cache, std::shared_ptr<std::any> index_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input, Tsor const& , Tsor const& grad ) noexcept
                     {
-                        unsigned long const ax = std::min( axis, input.shape().size()-1 );
+                        size_t const ax = std::min( axis, input.shape().size()-1 );
 
                         // example: for an input tensor of shape ( 2, 3, 4, 5 ), and axis is 1
                         auto const& shape = input.shape(); // example: the shape is ( 2, 3, 4, 5 )
-                        unsigned long const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the stride is 20
-                        unsigned long const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the iterations is 2
-                        unsigned long const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
+                        size_t const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the stride is 20
+                        size_t const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the iterations is 2
+                        size_t const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
 
-                        std::vector<unsigned long> const& output_shape = grad.shape(); // example: output shape of ( 2, 4, 5 )
-                        tensor<unsigned long>& index = context_cast<tensor<unsigned long>>( index_cache );
+                        std::vector<size_t> const& output_shape = grad.shape(); // example: output shape of ( 2, 4, 5 )
+                        tensor<size_t>& index = context_cast<tensor<size_t>>( index_cache );
                         index.resize( output_shape ); // example: index shape is ( 2, 4, 5 )
 
                         Tsor& ans = context_cast<Tsor>( backward_cache );
@@ -3417,7 +3417,7 @@ namespace ceras
                         for ( auto it : range( iterations ) ) // example: range( 2 )
                             for ( auto st : range( stride ) ) // example: range( 20 )
                             {
-                                unsigned long const offset = v_index[it][st]; // get the offset from record
+                                size_t const offset = v_index[it][st]; // get the offset from record
                                 v3[it][offset][st] = v2[it][st]; // only the element at the maximal position has gradient back-propagated
                             }
 
@@ -3442,7 +3442,7 @@ namespace ceras
     /// auto b = reduce_max( )( a ); // <- output shape is ( 2, 3 )
     /// \endcode
     ///
-    inline auto reduce_max( unsigned long axis=-1 ) noexcept
+    inline auto reduce_max( size_t axis=-1 ) noexcept
     {
         std::shared_ptr<std::any> index_cache = std::make_shared<std::any>();
         std::shared_ptr<std::any> forward_cache = std::make_shared<std::any>();
@@ -3455,9 +3455,9 @@ namespace ceras
                 reduce_max_context{}.make_forward()( axis, forward_cache, index_cache ),
                 reduce_max_context{}.make_backward()( axis, backward_cache, index_cache ),
                 "reduce_max",
-                [=]( std::vector<unsigned long> const& shape ) noexcept
+                [=]( std::vector<size_t> const& shape ) mutable noexcept
                 {
-                    std::vector<unsigned long> ans = shape;
+                    std::vector<size_t> ans = shape;
                     if ( axis >= shape.size() ) axis = shape.size() - 1;
                     std::copy( ans.begin()+axis+1, ans.end(), ans.begin()+axis );
                     ans.resize( ans.size() - 1 );
@@ -3477,22 +3477,22 @@ namespace ceras
         {
             auto make_forward() const noexcept
             {
-                return []( unsigned long axis, std::shared_ptr<std::any> forward_cache ) noexcept
+                return []( size_t axis, std::shared_ptr<std::any> forward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input ) noexcept
                     {
                         typedef typename Tsor::value_type value_type;
 
-                        unsigned long const ax = std::min( axis, input.shape().size()-1 );
+                        size_t const ax = std::min( axis, input.shape().size()-1 );
 
                         // example: for an input tensor of shape ( 2, 3, 4, 5 ), and axis is 1
                         auto const& shape = input.shape(); // example: the shape is ( 2, 3, 4, 5 )
-                        unsigned long const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the stride is 20
-                        unsigned long const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the iterations is 2
-                        unsigned long const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
+                        size_t const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the stride is 20
+                        size_t const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the iterations is 2
+                        size_t const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
 
                         // generate output tensor
-                        std::vector<unsigned long> output_shape = input.shape(); // example: temporately being ( 2, 3, 4, 5 )
+                        std::vector<size_t> output_shape = input.shape(); // example: temporately being ( 2, 3, 4, 5 )
                         std::copy( output_shape.begin()+ax+1, output_shape.end(), output_shape.begin()+ax ); // example: temporately being ( 2, 4, 5, 5 )
                         output_shape.resize( output_shape.size() - 1 ); // example: output_shape is ( 2, 4, 5 )
 
@@ -3515,17 +3515,17 @@ namespace ceras
 
             auto make_backward() const noexcept
             {
-                return []( unsigned long axis, std::shared_ptr<std::any> backward_cache ) noexcept
+                return []( size_t axis, std::shared_ptr<std::any> backward_cache ) noexcept
                 {
                     return [=]<Tensor Tsor>( Tsor const& input, Tsor const& , Tsor const& grad ) noexcept
                     {
-                        unsigned long const ax = std::min( axis, input.shape().size()-1 );
+                        size_t const ax = std::min( axis, input.shape().size()-1 );
 
                         // example: for an input tensor of shape ( 2, 3, 4, 5 ), and axis is 1
                         auto const& shape = input.shape(); // example: the shape is ( 2, 3, 4, 5 )
-                        unsigned long const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the stride is 20
-                        unsigned long const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( unsigned long x, unsigned long y ){ return x*y; } ); // example: the iterations is 2
-                        unsigned long const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
+                        size_t const stride = std::accumulate( shape.begin()+ax+1, shape.end(), 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the stride is 20
+                        size_t const iterations = std::accumulate( shape.begin(), shape.begin()+ax, 1UL, []( size_t x, size_t y ){ return x*y; } ); // example: the iterations is 2
+                        size_t const scales = shape[ax]; // the elements in the dimenstion to reduce. example: scales is 3
 
                         Tsor& ans = context_cast<Tsor>( backward_cache );
                         ans.resize( shape ); // example: ans shape is ( 2, 3, 4, 5 )
@@ -3559,7 +3559,7 @@ namespace ceras
     /// auto b = reduce_sum( -1 )( a ); // <- output shape is ( 2, 3 )
     /// \endcode
     ///
-    inline auto reduce_sum( unsigned long axis ) noexcept
+    inline auto reduce_sum( size_t axis ) noexcept
     {
         std::shared_ptr<std::any> forward_cache = std::make_shared<std::any>();
         std::shared_ptr<std::any> backward_cache = std::make_shared<std::any>();
@@ -3571,9 +3571,9 @@ namespace ceras
                 reduce_sum_context{}.make_forward()( axis, forward_cache ),
                 reduce_sum_context{}.make_backward()( axis, backward_cache ),
                 "reduce_sum",
-                [=]( std::vector<unsigned long> const& shape ) noexcept
+                [=]( std::vector<size_t> const& shape ) mutable noexcept
                 {
-                    std::vector<unsigned long> ans = shape;
+                    std::vector<size_t> ans = shape;
                     if ( axis >= shape.size() ) axis = shape.size() - 1;
                     std::copy( ans.begin()+axis+1, ans.end(), ans.begin()+axis );
                     ans.resize( ans.size() - 1 );

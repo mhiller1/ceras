@@ -9,7 +9,7 @@ namespace ceras
 {
     struct timer
     {
-        typedef unsigned long clock_type;
+        typedef size_t clock_type;
         typedef float float_type;
         typedef double double_type;
         typedef long double long_double_type;

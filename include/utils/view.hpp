@@ -12,10 +12,10 @@ namespace ceras
     struct view_1d
     {
         T* data;
-        unsigned long dims;
+        size_t dims;
 
-        constexpr T& operator[]( unsigned long idx ) noexcept { return data[idx]; }
-        constexpr T const& operator[]( unsigned long idx ) const noexcept { return data[idx]; }
+        constexpr T& operator[]( size_t idx ) noexcept { return data[idx]; }
+        constexpr T const& operator[]( size_t idx ) const noexcept { return data[idx]; }
     };// view_1d
 
     template< typename T >
@@ -34,26 +34,26 @@ namespace ceras
         typedef stride_iterator<const value_type*> const_col_type;
 
         T* data_;
-        unsigned long row_;
-        unsigned long col_;
+        size_t row_;
+        size_t col_;
         bool transposed_;
 
         template<typename A>
-        constexpr view_2d( tensor<T, A>& tsor, unsigned long row, unsigned long col, bool transposed=false ) noexcept : data_{tsor.data()}, row_{row}, col_{col}, transposed_{transposed} {}
+        constexpr view_2d( tensor<T, A>& tsor, size_t row, size_t col, bool transposed=false ) noexcept : data_{tsor.data()}, row_{row}, col_{col}, transposed_{transposed} {}
 
-        constexpr view_2d( T* data, unsigned long row, unsigned long col, bool transposed=false ) noexcept : data_{data}, row_{row}, col_{col}, transposed_{transposed} {}
+        constexpr view_2d( T* data, size_t row, size_t col, bool transposed=false ) noexcept : data_{data}, row_{row}, col_{col}, transposed_{transposed} {}
 
         // should have a template specialization for view_2d of const T*, but here ommited with 'const_cast' as operator []  should be specialized in that case
-        constexpr view_2d( const T* data, unsigned long row, unsigned long col, bool transposed=false ) noexcept : data_{const_cast<T*>(data)}, row_{row}, col_{col}, transposed_{transposed} {}
+        constexpr view_2d( const T* data, size_t row, size_t col, bool transposed=false ) noexcept : data_{const_cast<T*>(data)}, row_{row}, col_{col}, transposed_{transposed} {}
 
-        constexpr T* operator[]( unsigned long index )
+        constexpr T* operator[]( size_t index )
         {
             if ( transposed_ )
                 return data_ + index * row_;
             return data_ + index * col_;
         }
 
-        constexpr const T* operator[]( unsigned long index ) const
+        constexpr const T* operator[]( size_t index ) const
         {
             if ( transposed_ )
                 return data_ + index * row_;
@@ -61,7 +61,7 @@ namespace ceras
         }
 
         constexpr auto shape() const noexcept { return std::make_pair( row_, col_ ); }
-        constexpr unsigned long size() const noexcept { return row_ * col_; }
+        constexpr size_t size() const noexcept { return row_ * col_; }
 
         constexpr T* data() noexcept { return data_; }
         constexpr const T* data() const noexcept { return data_; }
@@ -69,20 +69,20 @@ namespace ceras
         constexpr T* begin() noexcept { return data_; }
         constexpr const T* end() const noexcept { return begin()+size(); }
 
-        constexpr unsigned long row() const noexcept { return row_; }
-        constexpr unsigned long col() const noexcept { return col_; }
+        constexpr size_t row() const noexcept { return row_; }
+        constexpr size_t col() const noexcept { return col_; }
 
-        constexpr row_type row_begin( unsigned long index = 0 ) noexcept { return begin() + index * col(); }
-        constexpr row_type row_end( unsigned long index = 0 ) noexcept { return begin() + (index+1) * col(); }
+        constexpr row_type row_begin( size_t index = 0 ) noexcept { return begin() + index * col(); }
+        constexpr row_type row_end( size_t index = 0 ) noexcept { return begin() + (index+1) * col(); }
 
-        constexpr const_row_type row_begin( unsigned long index = 0 ) const noexcept { return begin() + index * col(); }
-        constexpr const_row_type row_end( unsigned long index = 0 ) const noexcept { return begin() + (index+1) * col(); }
+        constexpr const_row_type row_begin( size_t index = 0 ) const noexcept { return begin() + index * col(); }
+        constexpr const_row_type row_end( size_t index = 0 ) const noexcept { return begin() + (index+1) * col(); }
 
-        constexpr col_type col_begin( unsigned long index = 0 ) noexcept { return col_type{ begin() + index, col() }; }
-        constexpr col_type col_end( unsigned long index = 0 ) noexcept { return col_begin(index) + row(); }
+        constexpr col_type col_begin( size_t index = 0 ) noexcept { return col_type{ begin() + index, col() }; }
+        constexpr col_type col_end( size_t index = 0 ) noexcept { return col_begin(index) + row(); }
 
-        constexpr const_col_type col_begin( unsigned long index = 0 ) const noexcept { return const_col_type{ begin() + index, col() }; }
-        constexpr const_col_type col_end( unsigned long index = 0 ) const noexcept { return col_begin(index) + row(); }
+        constexpr const_col_type col_begin( size_t index = 0 ) const noexcept { return const_col_type{ begin() + index, col() }; }
+        constexpr const_col_type col_end( size_t index = 0 ) const noexcept { return col_begin(index) + row(); }
     };
 
     template< typename T >
@@ -92,18 +92,18 @@ namespace ceras
     struct view_3d
     {
         T* data_;
-        unsigned long row_;
-        unsigned long col_;
-        unsigned long channel_;
+        size_t row_;
+        size_t col_;
+        size_t channel_;
 
-        constexpr view_3d( T* data, unsigned long row, unsigned long col, unsigned long channel ) noexcept : data_{data}, row_{row}, col_{col}, channel_{channel} {}
+        constexpr view_3d( T* data, size_t row, size_t col, size_t channel ) noexcept : data_{data}, row_{row}, col_{col}, channel_{channel} {}
 
-        constexpr auto operator[]( unsigned long index ) noexcept
+        constexpr auto operator[]( size_t index ) noexcept
         {
             return view_2d{ data_+index*col_*channel_, col_, channel_ };
         }
 
-        constexpr auto operator[]( unsigned long index ) const noexcept
+        constexpr auto operator[]( size_t index ) const noexcept
         {
             return view_2d{ data_+index*col_*channel_, col_, channel_ };
         }
@@ -119,10 +119,10 @@ namespace ceras
     struct view_4d
     {
         T* data_; ///< The pointer to the start position of the 1-D array.
-        unsigned long batch_size_; ///< The batch size of the 4-D tensor, also the first dimension of the tensor.
-        unsigned long row_; ///< The row of the 4-D tensor, also the second dimension of the tensor.
-        unsigned long col_; ///< The column of the 4-D tensor, also the third dimension of the tensor.
-        unsigned long channel_; ///< The channel of the 4-D tensor, also the last dimension of the tensor.
+        size_t batch_size_; ///< The batch size of the 4-D tensor, also the first dimension of the tensor.
+        size_t row_; ///< The row of the 4-D tensor, also the second dimension of the tensor.
+        size_t col_; ///< The column of the 4-D tensor, also the third dimension of the tensor.
+        size_t channel_; ///< The channel of the 4-D tensor, also the last dimension of the tensor.
 
         ///
         /// Constructor of view_4d
@@ -132,7 +132,7 @@ namespace ceras
         /// @param col The third dimension of the 4-D tensor, also for the column in the CNN layers.
         /// @param channel The last dimension of the 4-D tensor, also for the channel in the CNN layers.
         ///
-        constexpr view_4d( T* data=nullptr, unsigned long batch_size=0, unsigned long row=0, unsigned long col=0, unsigned long channel=0 ) noexcept : data_{data}, batch_size_{batch_size}, row_{row}, col_{col}, channel_{channel} {}
+        constexpr view_4d( T* data=nullptr, size_t batch_size=0, size_t row=0, size_t col=0, size_t channel=0 ) noexcept : data_{data}, batch_size_{batch_size}, row_{row}, col_{col}, channel_{channel} {}
 
         ///
         /// Giving a view_3d interface for operator [].
@@ -147,7 +147,7 @@ namespace ceras
         ///     t[0][1][2][3] = 1.0;
         /// @endcode
         ///
-        constexpr auto operator[]( unsigned long index ) noexcept
+        constexpr auto operator[]( size_t index ) noexcept
         {
             return view_3d{ data_+index*row_*col_*channel_, row_, col_, channel_ };
         }
@@ -167,7 +167,7 @@ namespace ceras
         ///     float v0123 = t[0][1][2][3];
         /// @endcode
         ///
-        constexpr auto operator[]( unsigned long index ) const noexcept
+        constexpr auto operator[]( size_t index ) const noexcept
         {
             return view_3d{ data_+index*row_*col_*channel_, row_, col_, channel_ };
         }
@@ -177,7 +177,7 @@ namespace ceras
     using tesseract_view = view_4d<T>;
 
 
-    template<typename T, unsigned long N>
+    template<typename T, size_t N>
     struct view;
 
     template<typename T>
@@ -203,7 +203,7 @@ namespace ceras
     {
         using view_4d<T>::view_4d;
 
-        view( T* data, std::array<unsigned long, 4> const& shape ) noexcept : view_4d<T>{ data, shape[0], shape[1], shape[2], shape[3] } {}
+        view( T* data, std::array<size_t, 4> const& shape ) noexcept : view_4d<T>{ data, shape[0], shape[1], shape[2], shape[3] } {}
     };
 
     ///
@@ -215,32 +215,32 @@ namespace ceras
     /// std::cout << v[0][0][5][3][4][5][6];
     /// \endcode
     ///
-    template< typename T, unsigned long N >
+    template< typename T, size_t N >
     struct view
     {
         T* data_;
-        std::array<unsigned long, N> shape_;
+        std::array<size_t, N> shape_;
 
-        constexpr view( T* data, std::array<unsigned long, N> const& shape ) noexcept :  data_{ data }, shape_{ shape } {}
+        constexpr view( T* data, std::array<size_t, N> const& shape ) noexcept :  data_{ data }, shape_{ shape } {}
 
-        view<T, N-1> operator []( unsigned long index ) noexcept
+        view<T, N-1> operator []( size_t index ) noexcept
         {
-            unsigned long first_dim = shape_[0];
+            size_t first_dim = shape_[0];
             better_assert( index < first_dim, "Expecting a dimension smaller than ", first_dim, " but got ", index );
-            unsigned long offsets = index * std::accumulate( shape_.begin()+1, shape_.end(), 1UL, [](unsigned long a, unsigned long b){ return a*b; } );
+            size_t offsets = index * std::accumulate( shape_.begin()+1, shape_.end(), 1UL, [](size_t a, size_t b){ return a*b; } );
 
-            std::array<unsigned long, N-1> new_shape;
+            std::array<size_t, N-1> new_shape;
             std::copy( shape_.begin()+1, shape_.end(), new_shape.begin() );
             return view<T, N-1>{ data_+offsets, new_shape };
         }
 
-        view<T, N-1> operator []( unsigned long index ) const noexcept
+        view<T, N-1> operator []( size_t index ) const noexcept
         {
-            unsigned long first_dim = shape_[0];
+            size_t first_dim = shape_[0];
             better_assert( index < first_dim, "Expecting a dimension smaller than ", first_dim, " but got ", index );
-            unsigned long offsets = index * std::accumulate( shape_.begin()+1, shape_.end(), 1UL, [](unsigned long a, unsigned long b){ return a*b; } );
+            size_t offsets = index * std::accumulate( shape_.begin()+1, shape_.end(), 1UL, [](size_t a, size_t b){ return a*b; } );
 
-            std::array<unsigned long, N-1> new_shape;
+            std::array<size_t, N-1> new_shape;
             std::copy( shape_.begin()+1, shape_.end(), new_shape.begin() );
             return view<T, N-1>{ data_+offsets, new_shape };
         }

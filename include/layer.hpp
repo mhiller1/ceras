@@ -14,7 +14,7 @@ namespace ceras
 {
 
 
-    inline auto Input( std::vector<unsigned long> const& input_shape = {{-1UL}} )
+    inline auto Input( std::vector<size_t> const& input_shape = {{-1UL}} )
     {
         return place_holder<tensor<float>>{ input_shape };
     }
@@ -44,9 +44,9 @@ namespace ceras
     /// \endcode
     ///
     [[deprecated("input_shape is not required in the new Conv2D(), this interface will be removed.")]]
-    inline constexpr auto Conv2D( unsigned long output_channels, std::vector<unsigned long> const& kernel_size,
-                                  std::vector<unsigned long> const& input_shape, std::string const& padding="valid",
-                                  std::vector<unsigned long> const& strides={1,1}, std::vector<unsigned long> const& dilations={1, 1}, bool use_bias=true,
+    inline constexpr auto Conv2D( size_t output_channels, std::vector<size_t> const& kernel_size,
+                                  std::vector<size_t> const& input_shape, std::string const& padding="valid",
+                                  std::vector<size_t> const& strides={1,1}, std::vector<size_t> const& dilations={1, 1}, bool use_bias=true,
                                   float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f
                                ) noexcept
     {
@@ -56,17 +56,17 @@ namespace ceras
         better_assert( strides.size() > 0, "Expecting strides at least has 1 elements." );
         return [=]<Expression Ex>( Ex const& ex ) noexcept
         {
-            unsigned long const kernel_size_x = kernel_size[0];
-            unsigned long const kernel_size_y = kernel_size.size() == 2 ? kernel_size[1] : kernel_size[0];
-            //unsigned long const kernel_size_y = kernel_size[1];
-            unsigned long const input_channels = input_shape[2];
-            unsigned long const input_x = input_shape[0];
-            unsigned long const input_y = input_shape[1];
-            unsigned long const stride_x = strides[0];
-            unsigned long const stride_y = strides.size() == 2 ? strides[1] : strides[0];
-            unsigned long const dilation_row = dilations[0];
-            unsigned long const dilation_col = dilations.size() == 2 ? dilations[1] : dilations[0];
-            //unsigned long const stride_y = strides[1];
+            size_t const kernel_size_x = kernel_size[0];
+            size_t const kernel_size_y = kernel_size.size() == 2 ? kernel_size[1] : kernel_size[0];
+            //size_t const kernel_size_y = kernel_size[1];
+            size_t const input_channels = input_shape[2];
+            size_t const input_x = input_shape[0];
+            size_t const input_y = input_shape[1];
+            size_t const stride_x = strides[0];
+            size_t const stride_y = strides.size() == 2 ? strides[1] : strides[0];
+            size_t const dilation_row = dilations[0];
+            size_t const dilation_col = dilations.size() == 2 ? dilations[1] : dilations[0];
+            //size_t const stride_y = strides[1];
             auto w = variable<tensor<float>>{ glorot_uniform<float>({output_channels, kernel_size_x, kernel_size_y, input_channels}), kernel_regularizer_l1, kernel_regularizer_l2 };
             auto b = variable<tensor<float>>{ zeros<float>({1, 1, output_channels}), bias_regularizer_l1, bias_regularizer_l2, use_bias };
             return conv2d( input_x, input_y, stride_x, stride_y, dilation_row, dilation_col, padding )( ex, w ) + b;
@@ -96,8 +96,8 @@ namespace ceras
     /// auto m = model{ x, u };
     /// \endcode
     ///
-    inline constexpr auto Conv2D( unsigned long output_channels, std::vector<unsigned long> const& kernel_size, std::string const& padding="valid",
-                                  std::vector<unsigned long> const& strides={1,1}, std::vector<unsigned long> const& dilations={1, 1}, bool use_bias=true,
+    inline constexpr auto Conv2D( size_t output_channels, std::vector<size_t> const& kernel_size, std::string const& padding="valid",
+                                  std::vector<size_t> const& strides={1,1}, std::vector<size_t> const& dilations={1, 1}, bool use_bias=true,
                                   float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f
            ) noexcept
     {
@@ -107,22 +107,22 @@ namespace ceras
         better_assert( strides.size() > 0, "Expecting strides at least has 1 elements." );
         return [=]<Expression Ex>( Ex const& ex ) noexcept
         {
-            unsigned long const kernel_size_x = kernel_size[0];
-            unsigned long const kernel_size_y = kernel_size.size() == 2 ? kernel_size[1] : kernel_size[0];
-            //unsigned long const input_channels = input_shape[2];
-            unsigned long const input_channels = *(ex.shape().rbegin());
-            unsigned long const stride_x = strides[0];
-            unsigned long const stride_y = strides.size() == 2 ? strides[1] : strides[0];
-            unsigned long const dilation_row = dilations[0];
-            unsigned long const dilation_col = dilations.size() == 2 ? dilations[1] : dilations[0];
+            size_t const kernel_size_x = kernel_size[0];
+            size_t const kernel_size_y = kernel_size.size() == 2 ? kernel_size[1] : kernel_size[0];
+            //size_t const input_channels = input_shape[2];
+            size_t const input_channels = *(ex.shape().rbegin());
+            size_t const stride_x = strides[0];
+            size_t const stride_y = strides.size() == 2 ? strides[1] : strides[0];
+            size_t const dilation_row = dilations[0];
+            size_t const dilation_col = dilations.size() == 2 ? dilations[1] : dilations[0];
             auto w = variable<tensor<float>>{ glorot_uniform<float>({output_channels, kernel_size_x, kernel_size_y, input_channels}), kernel_regularizer_l1, kernel_regularizer_l2 };
             auto b = variable<tensor<float>>{ zeros<float>({1, 1, output_channels}), bias_regularizer_l1, bias_regularizer_l2, use_bias };
             return general_conv2d( stride_x, stride_y, dilation_row, dilation_col, padding )( ex, w ) + b;
         };
     }
 
-    inline constexpr auto Conv1D( unsigned long filters, unsigned long kernel_size, unsigned long strides=1UL, std::string const& padding="valid",
-                                  unsigned long dilations=1UL, bool use_bias=true,
+    inline constexpr auto Conv1D( size_t filters, size_t kernel_size, size_t strides=1UL, std::string const& padding="valid",
+                                  size_t dilations=1UL, bool use_bias=true,
                                   float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f
            ) noexcept
     {
@@ -158,8 +158,8 @@ namespace ceras
     /// auto m = model{ x, u };
     /// \endcode
     ///
-    inline auto Conv2DTranspose(    unsigned long output_channels, std::vector<unsigned long> const& kernel_size, std::string const& padding="valid",
-                                    std::vector<unsigned long> const& strides={1,1}, std::vector<unsigned long> const& dilations={1, 1}, bool use_bias=true,
+    inline auto Conv2DTranspose(    size_t output_channels, std::vector<size_t> const& kernel_size, std::string const& padding="valid",
+                                    std::vector<size_t> const& strides={1,1}, std::vector<size_t> const& dilations={1, 1}, bool use_bias=true,
                                     float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f
            ) noexcept
     {
@@ -169,13 +169,13 @@ namespace ceras
         better_assert( strides.size() > 0, "Expecting strides at least has 1 elements." );
         return [=]<Expression Ex>( Ex const& ex ) noexcept
         {
-            unsigned long const kernel_size_x = kernel_size[0];
-            unsigned long const kernel_size_y = kernel_size.size() == 2 ? kernel_size[1] : kernel_size[0];
-            unsigned long const input_channels = *(ex.shape().rbegin());
-            unsigned long const stride_x = strides[0];
-            unsigned long const stride_y = strides.size() == 2 ? strides[1] : strides[0];
-            unsigned long const dilation_row = dilations[0];
-            unsigned long const dilation_col = dilations.size() == 2 ? dilations[1] : dilations[0];
+            size_t const kernel_size_x = kernel_size[0];
+            size_t const kernel_size_y = kernel_size.size() == 2 ? kernel_size[1] : kernel_size[0];
+            size_t const input_channels = *(ex.shape().rbegin());
+            size_t const stride_x = strides[0];
+            size_t const stride_y = strides.size() == 2 ? strides[1] : strides[0];
+            size_t const dilation_row = dilations[0];
+            size_t const dilation_col = dilations.size() == 2 ? dilations[1] : dilations[0];
             auto w = variable<tensor<float>>{ glorot_uniform<float>({output_channels, kernel_size_x, kernel_size_y, input_channels}), kernel_regularizer_l1, kernel_regularizer_l2 };
             auto b = variable<tensor<float>>{ zeros<float>({1, 1, output_channels}), bias_regularizer_l1, bias_regularizer_l2, use_bias };
             return conv2d_transpose( kernel_size_x, kernel_size_y, stride_x, stride_y, dilation_row, dilation_col, padding )( ex, w ) + b;
@@ -204,7 +204,7 @@ namespace ceras
     ///
 #if 0
     [[deprecated("input_size is not required in the new Dense()")]]
-    inline auto Dense( unsigned long output_size, unsigned long input_size, bool use_bias=true, float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f )
+    inline auto Dense( size_t output_size, size_t input_size, bool use_bias=true, float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f )
     {
         return [=]<Expression Ex>( Ex const& ex )
         {
@@ -232,12 +232,12 @@ namespace ceras
     /// auto m = model{ x, y };
     /// \endcode
     ///
-    inline auto Dense( unsigned long output_size, bool use_bias=true, float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f )
+    inline auto Dense( size_t output_size, bool use_bias=true, float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f )
     {
         return [=]<Expression Ex>( Ex const& ex )
         {
             better_assert( ex.shape().size() >= 1, fmt::format("Error: expecting shape 2D, but got {}D of {}.", ex.shape().size(), ex.shape()) );
-            unsigned long const input_size = *(ex.shape().rbegin());
+            size_t const input_size = *(ex.shape().rbegin());
             auto w = variable<tensor<float>>{ glorot_uniform<float>({input_size, output_size}), kernel_regularizer_l1, kernel_regularizer_l2 };
             auto b = variable<tensor<float>>{ zeros<float>({1, output_size}), bias_regularizer_l1, bias_regularizer_l2, use_bias }; // if use_baias, then b is trainable; otherwise, non-trainable.
             return ex * w + b;
@@ -260,18 +260,18 @@ namespace ceras
     /// \endcode
     ///
 #if 0
-    inline auto BatchNormalization( std::vector<unsigned long> const& shape, float threshold = 0.95f, float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f )
+    inline auto BatchNormalization( std::vector<size_t> const& shape, float threshold = 0.95f, float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f )
     {
         return [=]<Expression Ex>( Ex const& ex )
         {
-            unsigned long const last_dim = *(shape.rbegin());
+            size_t const last_dim = *(shape.rbegin());
             auto gamma = variable{ ones<float>( {last_dim, }  ), kernel_regularizer_l1, kernel_regularizer_l2 };
             auto beta = variable{ zeros<float>( {last_dim, } ), bias_regularizer_l1, bias_regularizer_l2 };
             return batch_normalization( threshold )( ex, gamma, beta );
         };
     }
 
-    inline auto BatchNormalization( float threshold, std::vector<unsigned long> const& shape, float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f )
+    inline auto BatchNormalization( float threshold, std::vector<size_t> const& shape, float kernel_regularizer_l1=0.0f, float kernel_regularizer_l2=0.0f, float bias_regularizer_l1=0.0f, float bias_regularizer_l2=0.0f )
     {
         return BatchNormalization( shape, threshold, kernel_regularizer_l1, kernel_regularizer_l2, bias_regularizer_l1, bias_regularizer_l2 );
     }
@@ -294,7 +294,7 @@ namespace ceras
     {
         return [=]<Expression Ex>( Ex const& ex )
         {
-            unsigned long const last_dim = *(ex.shape().rbegin());
+            size_t const last_dim = *(ex.shape().rbegin());
             auto gamma = variable{ ones<float>( {last_dim, }  ), kernel_regularizer_l1, kernel_regularizer_l2 };
             auto beta = variable{ zeros<float>( {last_dim, } ), bias_regularizer_l1, bias_regularizer_l2 };
             return batch_normalization( threshold )( ex, gamma, beta );
@@ -303,11 +303,11 @@ namespace ceras
 
 #if 0
     // TODO: fix this layer
-    inline auto LayerNormalization( std::vector<unsigned long> const& shape )
+    inline auto LayerNormalization( std::vector<size_t> const& shape )
     {
         return [=]<Expression Ex>( Ex const& ex )
         {
-            unsigned long const last_dim = *(shape.rbegin());
+            size_t const last_dim = *(shape.rbegin());
             auto gamma = variable<tensor<float>>{ ones<float>( {last_dim, }  ) };
             auto beta = variable<tensor<float>>{ zeros<float>( {last_dim, } ) };
             return layer_normalization()( ex, gamma, beta );
@@ -326,7 +326,7 @@ namespace ceras
     /// auto l12 = Concatenate()( l1, l2 ); // should be of shape (12, 11, 7)
     /// @endcode
     ///
-    inline auto Concatenate(unsigned long axis = -1) noexcept
+    inline auto Concatenate(size_t axis = -1) noexcept
     {
         return [=]<Expression Lhs_Expression, Expression Rhs_Expression>( Lhs_Expression const& lhs_ex, Rhs_Expression const& rhs_ex ) noexcept
         {
@@ -438,7 +438,7 @@ namespace ceras
     ///
     /// Reshapes inputs into the given shape.
     ///
-    inline auto Reshape( std::vector<unsigned long> const& new_shape, bool include_batch_flag=true ) noexcept
+    inline auto Reshape( std::vector<size_t> const& new_shape, bool include_batch_flag=true ) noexcept
     {
         return reshape( new_shape, include_batch_flag );
     }
@@ -457,7 +457,7 @@ namespace ceras
     ///
     /// Max pooling operation for 2D spatial data.
     ///
-    inline auto MaxPooling2D( unsigned long stride ) noexcept
+    inline auto MaxPooling2D( size_t stride ) noexcept
     {
         return max_pooling_2d( stride );
     }
@@ -465,7 +465,7 @@ namespace ceras
     ///
     /// Upsampling layer for 2D inputs.
     ///
-    inline auto UpSampling2D( unsigned long stride ) noexcept
+    inline auto UpSampling2D( size_t stride ) noexcept
     {
         return up_sampling_2d( stride );
     }
@@ -482,7 +482,7 @@ namespace ceras
     ///
     /// Average pooling operation for spatial data.
     ///
-    inline auto AveragePooling2D( unsigned long stride ) noexcept
+    inline auto AveragePooling2D( size_t stride ) noexcept
     {
         return average_pooling_2d( stride );
     }

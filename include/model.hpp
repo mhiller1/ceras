@@ -92,23 +92,23 @@ namespace ceras
         /// @return Test loss. A scalar.
         ///
         template< Tensor Tsor >
-        auto evaluate( Tsor const& inputs, Tsor const& outputs, unsigned long batch_size=32 )
+        auto evaluate( Tsor const& inputs, Tsor const& outputs, size_t batch_size=32 )
         {
             // extract size of samples
-            unsigned long const samples = *(inputs.shape().begin());
-            unsigned long const loops = samples / batch_size;
+            size_t const samples = *(inputs.shape().begin());
+            size_t const loops = samples / batch_size;
 
             // prepare tensor for inputs
-            std::vector<unsigned long> batch_input_shape = inputs.shape();
+            std::vector<size_t> batch_input_shape = inputs.shape();
             batch_input_shape[0] = batch_size;
             Tsor input_samples{ batch_input_shape };
-            unsigned long const input_size_per_batch = input_samples.size();
+            size_t const input_size_per_batch = input_samples.size();
 
             // prepare tensor for outputs
-            std::vector<unsigned long> batch_output_shape = outputs.shape();
+            std::vector<size_t> batch_output_shape = outputs.shape();
             batch_output_shape[0] = batch_size;
             Tsor output_samples{ batch_output_shape };
-            unsigned long const output_size_per_batch = output_samples.size();
+            size_t const output_size_per_batch = output_samples.size();
 
             // bind tensors to place holders
             //session<Tsor> s;
@@ -153,33 +153,33 @@ namespace ceras
         /// auto cm = m.compile( ... );
         /// tensor<float> inputs, outputs;
         /// //...
-        /// unsigned long batch_size = 32;
-        /// unsigned long epoch = 10;
+        /// size_t batch_size = 32;
+        /// size_t epoch = 10;
         /// int verbose = 1;
         /// double validation_split = 0.2;
         /// auto errors = cm.fit( inputs, outputs, batch_size, epoch, verbose, validation_split );
         /// @endcode
         ///
         template< Tensor Tsor >
-        auto fit( Tsor const& inputs, Tsor const& outputs, unsigned long batch_size, unsigned long epoch=1, int verbose=0, double validation_split=0.0 )
+        auto fit( Tsor const& inputs, Tsor const& outputs, size_t batch_size, size_t epoch=1, int verbose=0, double validation_split=0.0 )
         {
             // extract size of samples
-            unsigned long const samples = *(inputs.shape().begin());
-            unsigned long const loops_per_epoch = samples / batch_size;
-            unsigned long const training_loops = ( 1.0 - validation_split ) * loops_per_epoch;
-            unsigned long const validation_loops = loops_per_epoch - training_loops;
+            size_t const samples = *(inputs.shape().begin());
+            size_t const loops_per_epoch = samples / batch_size;
+            size_t const training_loops = ( 1.0 - validation_split ) * loops_per_epoch;
+            size_t const validation_loops = loops_per_epoch - training_loops;
 
             // prepare tensor for inputs
-            std::vector<unsigned long> batch_input_shape = inputs.shape();
+            std::vector<size_t> batch_input_shape = inputs.shape();
             batch_input_shape[0] = batch_size;
             Tsor input_samples{ batch_input_shape };
-            unsigned long const input_size_per_batch = input_samples.size();
+            size_t const input_size_per_batch = input_samples.size();
 
             // prepare tensor for outputs
-            std::vector<unsigned long> batch_output_shape = outputs.shape();
+            std::vector<size_t> batch_output_shape = outputs.shape();
             batch_output_shape[0] = batch_size;
             Tsor output_samples{ batch_output_shape };
-            unsigned long const output_size_per_batch = output_samples.size();
+            size_t const output_size_per_batch = output_samples.size();
 
             // bind tensors to place holders
             //session<Tsor> s;
@@ -393,7 +393,7 @@ namespace ceras
         /// Example useage:
         /// @code
         /// model m{ ... };
-        /// unsigned long batch_size = 16;
+        /// size_t batch_size = 16;
         /// float learning_rate = 0.001f;
         /// auto cm = m.compile( MeanSquaredError(), SGD( batch_size, learning_rate ) );
         /// @endcode

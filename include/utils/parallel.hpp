@@ -11,7 +11,7 @@ namespace ceras
 #if 1
 
     template< typename Function, std::unsigned_integral Integer_Type >
-    void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last, unsigned long threshold = 8 ) // 1d parallel
+    void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last, size_t threshold = 8 ) // 1d parallel
     {
         if constexpr( parallel_mode == 0 )
         {
@@ -80,7 +80,7 @@ namespace ceras
     // parallel consumes 0.37s
     //
     template< typename Function, std::unsigned_integral Integer_Type >
-    void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last, unsigned long threshold = 8 ) // 1d parallel
+    void parallel( Function const& func, Integer_Type dim_first, Integer_Type dim_last, size_t threshold = 8 ) // 1d parallel
     {
         auto const& vec = range( dim_first, dim_last );
         //std::for_each( std::execution::par, vec.cbegin(), vec.cend(), [&func]( Integer_Type const& idx ){ func(idx); } ); // this requires 0.70s to process a vector of 200000000

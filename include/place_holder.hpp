@@ -17,7 +17,7 @@ namespace ceras
     struct place_holder_state
     {
         Tsor data_;
-        std::vector< unsigned long> shape_hint_;
+        std::vector< size_t> shape_hint_;
     };
 
     template< Tensor Tsor >
@@ -34,10 +34,10 @@ namespace ceras
         place_holder()
         {
             (*this).state_ = std::make_shared<place_holder_state<Tsor>>();
-            (*((*this).state_)).shape_hint_ = std::vector< unsigned long >{ {-1UL,} };
+            (*((*this).state_)).shape_hint_ = std::vector< size_t >{ {-1UL,} };
         }
 
-        place_holder( std::vector<unsigned long> const& shape_hint )
+        place_holder( std::vector<size_t> const& shape_hint )
         {
             (*this).state_ = std::make_shared<place_holder_state<Tsor>>();
             (*((*this).state_)).shape_hint_ = shape_hint;
@@ -65,17 +65,17 @@ namespace ceras
         void reset() noexcept
         {
             (*((*this).state_)).data_ = Tsor{};
-            (*((*this).state_)).shape_hint_ = std::vector<unsigned long>{{-1UL}};
+            (*((*this).state_)).shape_hint_ = std::vector<size_t>{{-1UL}};
         }
 
         void backward( auto ) const noexcept { }
 
-        void shape( std::vector< unsigned long> const& shape_hint ) noexcept
+        void shape( std::vector< size_t> const& shape_hint ) noexcept
         {
             (*((*this).state_)).shape_hint_ = shape_hint;
         }
 
-        std::vector<unsigned long> shape() const noexcept
+        std::vector<size_t> shape() const noexcept
         {
             if ( ! (*((*this).state_)).data_.empty() )
                 return (*((*this).state_)).data_.shape();

@@ -33,7 +33,7 @@ namespace ceras
         T             momentum_;
         T             decay_;
         bool          nesterov_;
-        unsigned long iterations_;
+        size_t iterations_;
 
         sgd(Loss& loss, std::size_t batch_size, T learning_rate=1.0e-1, T momentum=0.0, T decay=0.0, bool nesterov=false) noexcept :
             loss_{loss}, learning_rate_(learning_rate), momentum_(std::max(T{0}, momentum)), decay_{std::max(T{0}, decay)}, nesterov_{nesterov}, iterations_{0}
@@ -76,7 +76,7 @@ namespace ceras
         Loss&         loss_;
         T             learning_rate_;
         T             decay_;
-        unsigned long iterations_;
+        size_t iterations_;
 
         adagrad(Loss& loss, std::size_t batch_size, T learning_rate=1.0e-1, T decay=0.0) noexcept :
                 loss_(loss), learning_rate_(learning_rate), decay_{std::max(T{0}, decay)}, iterations_{0}
@@ -127,7 +127,7 @@ namespace ceras
         T             learning_rate_;
         T             rho_;
         T             decay_;
-        unsigned long iterations_;
+        size_t iterations_;
 
         rmsprop(Loss& loss, std::size_t batch_size, T learning_rate=1.0e-1, T rho=0.9, T decay=0.0) noexcept :
                 loss_(loss), learning_rate_(learning_rate), rho_{rho},  decay_{std::max(T{0}, decay)}, iterations_{0}
@@ -180,7 +180,7 @@ namespace ceras
         Loss&         loss_;
         T             rho_;
         T             learning_rate_;
-        unsigned long iterations_;
+        size_t iterations_;
 
         adadelta(Loss& loss, std::size_t batch_size, T rho=0.9) noexcept : loss_(loss), rho_{rho}, iterations_{0}
         {
@@ -255,7 +255,7 @@ namespace ceras
         T             beta_1_;
         T             beta_2_;
         bool          amsgrad_;
-        unsigned long iterations_;
+        size_t iterations_;
 
         adam(Loss& loss, std::size_t batch_size, T learning_rate=1.0e-1, T beta_1=0.9, T beta_2=0.999, bool amsgrad=false) noexcept :
              loss_{loss}, learning_rate_{learning_rate}, beta_1_{beta_1}, beta_2_{beta_2}, amsgrad_{ amsgrad }, iterations_{0}

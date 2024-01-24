@@ -9,9 +9,9 @@
 namespace ceras::imageio
 {
     //stbir_resize_uint8( input_pixels , in_w , in_h , 0, output_pixels, out_w, out_h, 0, num_channels)
-    inline tensor<unsigned char> imresize( tensor<unsigned char> const& input_image, std::vector<unsigned long> const& output_shape )
+    inline tensor<unsigned char> imresize( tensor<unsigned char> const& input_image, std::vector<size_t> const& output_shape )
     {
-        std::vector<unsigned long> const& input_shape = input_image.shape();
+        std::vector<size_t> const& input_shape = input_image.shape();
         tensor<unsigned char> ans{ output_shape };
         if ( input_shape.size() == 3 )
         {
@@ -32,7 +32,7 @@ namespace ceras::imageio
         unsigned char *img = stbi_load( path.c_str(), &width, &height, &channels, 0);
         if ( img == nullptr ) return {};
 
-        tensor<unsigned char> ans{ {static_cast<unsigned long>(width), static_cast<unsigned long>(height), static_cast<unsigned long>(channels)} };
+        tensor<unsigned char> ans{ {static_cast<size_t>(width), static_cast<size_t>(height), static_cast<size_t>(channels)} };
         std::copy_n( img, width*height*channels, ans.begin() );
         stbi_image_free(img);
         return ans;

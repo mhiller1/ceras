@@ -10,7 +10,7 @@ namespace ceras
     template< typename T, typename Alloc >
     struct vector
     {
-        typedef unsigned long size_type;
+        typedef size_t size_type;
         typedef long difference_type;
         typedef Alloc allocator_type;
         typedef T value_type;
@@ -20,7 +20,7 @@ namespace ceras
         typedef value_type& reference;
         typedef const value_type& const_reference;
 
-        unsigned long size_;
+        size_t size_;
         pointer data_;
 
         constexpr vector( vector && other ) noexcept
@@ -40,7 +40,7 @@ namespace ceras
             return *this;
         }
 
-        constexpr explicit vector( unsigned long size = 0, value_type init = value_type{} ) : size_{ 0 }, data_{ nullptr }
+        constexpr explicit vector( size_t size = 0, value_type init = value_type{} ) : size_{ 0 }, data_{ nullptr }
         {
             resize( size );
 
@@ -86,7 +86,7 @@ namespace ceras
             size_ = 0;
         }
 
-        constexpr void resize( unsigned long size )
+        constexpr void resize( size_t size )
         {
             if ( size == (*this).size() )
                 return;
@@ -111,7 +111,7 @@ namespace ceras
             return data_;
         }
 
-        constexpr unsigned long size() const noexcept
+        constexpr size_t size() const noexcept
         {
             return size_;
         }

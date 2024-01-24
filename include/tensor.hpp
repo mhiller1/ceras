@@ -28,13 +28,13 @@ namespace ceras
     /// random_seed=42;
     /// \endcode
     ///
-    static unsigned long random_seed = std::chrono::system_clock::now().time_since_epoch().count();
+    static unsigned int random_seed = std::chrono::system_clock::now().time_since_epoch().count();
 
     // static random number random_generator
     static std::mt19937 random_generator{random_seed};
 
     template< typename T >
-    using default_allocator = cached_allocator<T>;
+    using default_allocator = std::allocator<T>;
     //using default_allocator = std::allocator<T>;
 
 
@@ -48,8 +48,8 @@ namespace ceras
         typedef tensor self_type;
 
         // TODO: with buffered_allocator
-        //std::vector<unsigned long> shape_;
-        std::vector<unsigned long, buffered_allocator<unsigned long, 256>> shape_;
+        //std::vector<size_t> shape_;
+        std::vector<size_t, buffered_allocator<size_t, 256>> shape_;
         shared_vector vector_;
 
         ///
@@ -61,13 +61,13 @@ namespace ceras
         /// @brief Construct a vector with the specified shape, initialized value and a (default) allocator.
         ///
         template<typename Another_Alloc>
-        constexpr tensor( std::vector<unsigned long, Another_Alloc> const& shape, std::initializer_list<T> init ) :
+        constexpr tensor( std::vector<size_t, Another_Alloc> const& shape, std::initializer_list<T> init ) :
         shape_{shape.begin(), shape.end()}, vector_{std::make_shared<vector_type>(init)}
         {
             better_assert( (*vector_).size() == std::accumulate( shape_.begin(), shape_.end(), 1UL, [](auto x, auto y){ return x*y; } ), "Expecting vector has same size as the shape indicates." );
         }
 
-        constexpr tensor( std::initializer_list<unsigned long> shape, std::initializer_list<T> init ) :
+        constexpr tensor( std::initializer_list<size_t> shape, std::initializer_list<T> init ) :
         shape_{shape.begin(), shape.end()}, vector_{std::make_shared<vector_type>(init)}
         {
             better_assert( (*vector_).size() == std::accumulate( shape_.begin(), shape_.end(), 1UL, [](auto x, auto y){ return x*y; } ), "Expecting vector has same size as the shape indicates." );
@@ -77,12 +77,12 @@ namespace ceras
         /// @brief Construct a vector with the specified shape. All values initialized to default. With a default constructed allocator
         ///
         template<typename Another_Alloc>
-        constexpr tensor( std::vector<unsigned long, Another_Alloc> const& shape ) :
+        constexpr tensor( std::vector<size_t, Another_Alloc> const& shape ) :
         shape_{shape.begin(), shape.end()},
         vector_{std::make_shared<vector_type>(std::accumulate(shape_.begin(), shape_.end(), 1UL, [](auto x, auto y){return x*y;} ), T{0})}
         {}
 
-        constexpr tensor( std::initializer_list<unsigned long> shape ) :
+        constexpr tensor( std::initializer_list<size_t> shape ) :
         shape_{ shape.begin(), shape.end() },
         vector_{std::make_shared<vector_type>(std::accumulate(shape_.begin(), shape_.end(), 1UL, [](auto x, auto y){return x*y;} ), T{0})}
         {}
@@ -91,14 +91,14 @@ namespace ceras
         /// @brief Construct a vector with the specified shape and all values initialized to `init`. With a default constructed allocator
         ///
         template<typename Another_Alloc>
-        constexpr tensor( std::vector<unsigned long, Another_Alloc> const& shape, T init ) :
+        constexpr tensor( std::vector<size_t, Another_Alloc> const& shape, T init ) :
         shape_{shape.begin(), shape.end()},
         vector_{std::make_shared<vector_type>(std::accumulate(shape_.begin(), shape_.end(), 1UL, [](auto x, auto y){return x*y;}), T{0})}
         {
             std::fill( begin(), end(), init );
         }
 
-        constexpr tensor( std::initializer_list<unsigned long> shape,  T init ) :
+        constexpr tensor( std::initializer_list<size_t> shape,  T init ) :
         shape_{shape.begin(), shape.end()},
         vector_{std::make_shared<vector_type>(std::accumulate(shape_.begin(), shape_.end(), 1UL, [](auto x, auto y){return x*y;}), T{0})}
         {
@@ -246,7 +246,7 @@ namespace ceras
         ///
         /// @brief Number of elements in the tensor.
         ///
-        constexpr unsigned long size() const noexcept
+        constexpr size_t size() const noexcept
         {
             if ( !vector_ ) return 0;
             return (*vector_ ).size();
@@ -281,7 +281,7 @@ namespace ceras
         ///
         /// @brief Dimension of the tensor
         ///
-        constexpr unsigned long ndim() const noexcept
+        constexpr size_t ndim() const noexcept
         {
             return shape_.size();
         }
@@ -289,9 +289,9 @@ namespace ceras
         ///
         /// @brief Shape of the tensor.
         ///
-        constexpr std::vector<unsigned long> const shape() const noexcept
+        constexpr std::vector<size_t> const shape() const noexcept
         {
-            return std::vector<unsigned long>{ shape_.begin(), shape_.end() };
+            return std::vector<size_t>{ shape_.begin(), shape_.end() };
         }
 
 
@@ -318,13 +318,13 @@ namespace ceras
         }
 
         // 1-D view
-        constexpr value_type& operator[]( unsigned long idx )
+        constexpr value_type& operator[]( size_t idx )
         {
             return *(data()+idx);
         }
 
         // 1-D view
-        constexpr value_type const& operator[]( unsigned long idx ) const
+        constexpr value_type const& operator[]( size_t idx ) const
         {
             return *(data()+idx);
         }
@@ -332,9 +332,9 @@ namespace ceras
         ///
         /// @brief Resize the tensor with a new shape.
         ///
-        constexpr self_type& resize( std::vector< unsigned long > const& new_shape )
+        constexpr self_type& resize( std::vector< size_t > const& new_shape )
         {
-            unsigned long const new_size = std::accumulate( new_shape.begin(), new_shape.end(), 1UL, [](auto x, auto y){ return x*y; } );
+            size_t const new_size = std::accumulate( new_shape.begin(), new_shape.end(), 1UL, [](auto x, auto y){ return x*y; } );
             if( (*this).size() != new_size )
                 (*vector_).resize(new_size);
             (*this).shape_.resize( new_shape.size() );
@@ -351,13 +351,13 @@ namespace ceras
         /// auto t2 = t.reshape( {1, 4, -1UL} );
         /// \endcode
         ///
-        constexpr self_type& reshape( std::vector<unsigned long> const& new_shape )
+        constexpr self_type& reshape( std::vector<size_t> const& new_shape )
         {
-            std::vector<unsigned long> _new_shape = new_shape;
-            if ( *(_new_shape.rbegin()) == static_cast<unsigned long>( -1 ) )
-                *(_new_shape.rbegin()) = (*this).size() / std::accumulate( _new_shape.begin(), _new_shape.end()-1, 1Ul, []( unsigned long x, unsigned long y ){ return x*y; } );
+            std::vector<size_t> _new_shape = new_shape;
+            if ( *(_new_shape.rbegin()) == static_cast<size_t>( -1 ) )
+                *(_new_shape.rbegin()) = (*this).size() / std::accumulate( _new_shape.begin(), _new_shape.end()-1, 1Ul, []( size_t x, size_t y ){ return x*y; } );
 
-            unsigned long const new_size = std::accumulate( _new_shape.begin(), _new_shape.end(), 1UL, [](auto x, auto y){ return x*y; } );
+            size_t const new_size = std::accumulate( _new_shape.begin(), _new_shape.end(), 1UL, [](auto x, auto y){ return x*y; } );
             if ( (*this).size() != new_size ) return resize( _new_shape );
 
             better_assert( (*this).size() == new_size, "reshape: expecting same size, but the original size is ", (*this).size(), ", and the new size is ", new_size );
@@ -473,7 +473,7 @@ namespace ceras
         template< typename U >
         constexpr auto as_type() const noexcept
         {
-            tensor<U, typename std::allocator_traits<Allocator>::rebind_alloc<U>> ans{ (*this).shape() };
+            tensor<U, typename std::allocator_traits<Allocator>::template rebind_alloc<U>> ans{ (*this).shape() };
             std::copy( (*this).begin(), (*this).end(), ans.begin() );
             return ans;
         }

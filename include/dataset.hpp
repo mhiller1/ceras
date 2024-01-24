@@ -43,8 +43,8 @@ namespace ceras::dataset
 
             auto const& extract_image = []( std::vector<std::uint8_t> const& image_data )
             {
-                unsigned long const offset = 16;
-                unsigned long const samples = (image_data.size()-offset) / (28*28);
+                size_t const offset = 16;
+                size_t const samples = (image_data.size()-offset) / (28*28);
                 tensor<std::uint8_t> ans{ {samples, 28UL, 28UL} };
                 std::copy( image_data.begin()+offset, image_data.end(), ans.data() );
                 return ans;
@@ -52,10 +52,10 @@ namespace ceras::dataset
 
             auto const& extract_label = []( std::vector<std::uint8_t> const& label_data )
             {
-                unsigned long const offset = 8;
-                unsigned long const samples = label_data.size() - offset;
+                size_t const offset = 8;
+                size_t const samples = label_data.size() - offset;
                 auto ans = zeros<std::uint8_t>({samples, 10});
-                auto ans_2d = matrix_view{ ans.data(), samples, 10 };
+                auto ans_2d = matrix_view<std::uint8_t>{ ans.data(), samples, 10 };
                 for ( auto idx : range( samples ) )
                     ans_2d[idx][label_data[idx+offset]] = 1;
                 return ans;
@@ -114,8 +114,8 @@ namespace ceras::dataset
 
             auto const& extract_image = []( std::vector<std::uint8_t> const& image_data )
             {
-                unsigned long const offset = 16;
-                unsigned long const samples = (image_data.size()-offset) / (28*28);
+                size_t const offset = 16;
+                size_t const samples = (image_data.size()-offset) / (28*28);
                 tensor<std::uint8_t> ans{ {samples, 28UL, 28UL} };
                 std::copy( image_data.begin()+offset, image_data.end(), ans.data() );
                 return ans;
@@ -123,10 +123,10 @@ namespace ceras::dataset
 
             auto const& extract_label = []( std::vector<std::uint8_t> const& label_data )
             {
-                unsigned long const offset = 8;
-                unsigned long const samples = label_data.size() - offset;
+                size_t const offset = 8;
+                size_t const samples = label_data.size() - offset;
                 auto ans = zeros<std::uint8_t>({samples, 10});
-                auto ans_2d = matrix_view{ ans.data(), samples, 10 };
+                auto ans_2d = matrix_view<std::uint8_t>{ ans.data(), samples, 10 };
                 for ( auto idx : range( samples ) )
                     ans_2d[idx][label_data[idx+offset]] = 1;
                 return ans;

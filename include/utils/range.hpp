@@ -6,7 +6,7 @@
 namespace ceras
 {
 
-#if 0
+#if 1
     template< std::weakly_incrementable W >
     constexpr auto range( W val_begin, W val_end )
     {
@@ -105,21 +105,21 @@ namespace ceras
             return ans;
         }
 
-        self_type& operator +=( unsigned long  n )
+        self_type& operator +=( size_t  n )
         {
             while ( n--  )
                 ++(*this);
             return *this;
         }
 
-        friend self_type const operator + ( self_type const& lhs, unsigned long rhs )
+        friend self_type const operator + ( self_type const& lhs, size_t rhs )
         {
             self_type ans{ lhs };
             ans += rhs;
             return ans;
         }
 
-        friend self_type const operator + ( unsigned long lhs, self_type const& rhs )
+        friend self_type const operator + ( size_t lhs, self_type const& rhs )
         {
             return rhs + lhs;
         }

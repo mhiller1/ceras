@@ -161,7 +161,7 @@ namespace ceras
     /// @brief Number of elements in the tensor.
     ///
     template< Tensor Tsor >
-    constexpr unsigned long size( Tsor const& tsor ) noexcept
+    constexpr size_t size( Tsor const& tsor ) noexcept
     {
         return tsor.size();
     }
@@ -171,7 +171,7 @@ namespace ceras
     /// @brief Dimension of the tensor.
     ///
     template< Tensor Tsor >
-    constexpr unsigned long ndim( Tsor const& tsor ) noexcept
+    constexpr size_t ndim( Tsor const& tsor ) noexcept
     {
         return tsor.ndim();
     }
@@ -181,7 +181,7 @@ namespace ceras
     /// @brief Reset all emements in the tensor
     ///
     template< Tensor Tsor >
-    constexpr unsigned long reset( Tsor& tsor, typename Tsor::value_type val=0 ) noexcept
+    constexpr size_t reset( Tsor& tsor, typename Tsor::value_type val=0 ) noexcept
     {
         return tsor.reset( val );
     }
@@ -210,7 +210,7 @@ namespace ceras
     /// @brief Resize the tensor to a new shape. Size of the tensor might change.
     ///
     template< Tensor Tsor >
-    constexpr auto resize( Tsor& tsor, std::vector<unsigned long> const& new_shape ) noexcept
+    constexpr auto resize( Tsor& tsor, std::vector<size_t> const& new_shape ) noexcept
     {
         return tsor.resize( new_shape );
     }
@@ -220,7 +220,7 @@ namespace ceras
     /// @brief Resize the tensor to a new shape. Size of the tensor remains the same as before.
     ///
     template< Tensor Tsor >
-    constexpr auto reshape( Tsor& tsor, std::vector<unsigned long> const& new_shape ) noexcept
+    constexpr auto reshape( Tsor& tsor, std::vector<size_t> const& new_shape ) noexcept
     {
         return tsor.reshape( new_shape );
     }
@@ -271,7 +271,7 @@ namespace ceras
         os.precision(os_.precision());
         //shape
         os << "shape: [ ";
-        std::copy( tsor.shape_.begin(), tsor.shape_.end(), std::ostream_iterator<unsigned long>{os, " "} );
+        std::copy( tsor.shape_.begin(), tsor.shape_.end(), std::ostream_iterator<size_t>{os, " "} );
         os << "]\n";
 
         //data
@@ -284,9 +284,9 @@ namespace ceras
         else
         {
             auto const& shape = tsor.shape();
-            unsigned long const dims = shape.size();
-            unsigned long const last_dim = shape[dims-1];
-            unsigned long const abbreviated_rows= std::reduce( shape.begin(), shape.begin()+dims-1, 1UL, []( unsigned long x, unsigned long y ){ return x*y; } );
+            size_t const dims = shape.size();
+            size_t const last_dim = shape[dims-1];
+            size_t const abbreviated_rows= std::reduce( shape.begin(), shape.begin()+dims-1, 1UL, []( size_t x, size_t y ){ return x*y; } );
             for ( auto idx = 0UL; idx != abbreviated_rows; ++idx )
             {
                 std::copy( tsor.data()+idx*last_dim, tsor.data()+(idx+1)*last_dim, std::ostream_iterator<value_type>{os, "\t"} );
@@ -300,14 +300,14 @@ namespace ceras
 
 
     template <Tensor Tsor>
-    Tsor broadcast_tensor( Tsor const& tsor, std::vector<unsigned long> const& new_shape ) noexcept
+    Tsor broadcast_tensor( Tsor const& tsor, std::vector<size_t> const& new_shape ) noexcept
     {
         // case of same shapes
         if ( tsor.shape() == new_shape )
             return tsor;
 
         auto _ans = tsor;
-        std::vector<unsigned long> updated_shape = _ans.shape();
+        std::vector<size_t> updated_shape = _ans.shape();
         if (updated_shape.size() < new_shape.size())
         {
             for ([[maybe_unused]]auto _ : range(new_shape.size()-updated_shape.size()))
@@ -321,7 +321,7 @@ namespace ceras
 
 
         // finding the expanding dimension
-        long int dim_to_expand = updated_shape.size()-1;
+        std::make_signed_t<size_t> dim_to_expand = updated_shape.size()-1;
         while( dim_to_expand >= 0 )
         {
             if ( new_shape[dim_to_expand] != updated_shape[dim_to_expand] )
@@ -333,11 +333,11 @@ namespace ceras
 
         // [headings..][1][tailings...] <- updated_shape
         // [headings..][x][tailings...] <- new_shape
-        unsigned long const headings = std::accumulate( updated_shape.begin(), updated_shape.begin()+dim_to_expand, 1UL, []( auto x, auto y ) noexcept { return x*y; } );
-        unsigned long const repeats = new_shape[dim_to_expand];
-        unsigned long const tailings = std::accumulate( updated_shape.begin()+dim_to_expand, updated_shape.end(), 1UL, []( auto x, auto y ) noexcept { return x*y; } );
+        size_t const headings = std::accumulate( updated_shape.begin(), updated_shape.begin()+dim_to_expand, 1UL, []( auto x, auto y ) noexcept { return x*y; } );
+        size_t const repeats = new_shape[dim_to_expand];
+        size_t const tailings = std::accumulate( updated_shape.begin()+dim_to_expand, updated_shape.end(), 1UL, []( auto x, auto y ) noexcept { return x*y; } );
 
-        std::vector<unsigned long> expanded_shape = updated_shape;
+        std::vector<size_t> expanded_shape = updated_shape;
         expanded_shape[dim_to_expand] = new_shape[dim_to_expand];
         Tsor ans{ expanded_shape };
         view_3d v3{ ans.data(), headings, repeats, tailings }; // 3D view of ans
@@ -382,25 +382,25 @@ namespace ceras
     /// @return Broadcasted shape of \ref shape_a and \ref shape_b.
     ///
     ///
-    inline std::vector<unsigned long> broadcast_shape( std::vector<unsigned long> const& shape_a, std::vector<unsigned long> const& shape_b ) noexcept
+    inline std::vector<size_t> broadcast_shape( std::vector<size_t> const& shape_a, std::vector<size_t> const& shape_b ) noexcept
     {
         if (shape_a == shape_b)
             return shape_a;
 
-        std::vector<unsigned long> ans;
-        long int const size_a = shape_a.size();
-        long int const size_b = shape_b.size();
+        std::vector<size_t> ans;
+        std::make_signed_t<size_t> const size_a = shape_a.size();
+        std::make_signed_t<size_t> const size_b = shape_b.size();
 
-        for ( long int idx = 0; true; ++idx )
+        for ( std::make_signed_t<size_t> idx = 0; true; ++idx )
         {
-            long int const a_index = size_a - 1 - idx;
-            long int const b_index = size_b - 1 - idx;
+            std::make_signed_t<size_t> const a_index = size_a - 1 - idx;
+            std::make_signed_t<size_t> const b_index = size_b - 1 - idx;
 
             if (a_index < 0 && b_index < 0)
                 break;
 
-            unsigned long const dim_a = (a_index < 0) ? 1 : shape_a[a_index];
-            unsigned long const dim_b = (b_index < 0) ? 1 : shape_b[b_index];
+            size_t const dim_a = (a_index < 0) ? 1 : shape_a[a_index];
+            size_t const dim_b = (b_index < 0) ? 1 : shape_b[b_index];
 
             if (dim_a == 1)
             {
@@ -426,7 +426,7 @@ namespace ceras
     // C <= A * B
     // where A or A' is [m x n], B or B' is [n x k] and C is [m x k]
     template< typename T > requires std::floating_point<T>
-    void gemm_cpu( T const* A, bool a_transposed, T const* B, bool b_transposed, unsigned long m, unsigned long n, unsigned long k, T* __restrict__ C )
+    void gemm_cpu( T const* A, bool a_transposed, T const* B, bool b_transposed, size_t m, size_t n, size_t k, T* __restrict__ C )
     {
         auto a_view = view_2d{ A, m, n, a_transposed };
         auto b_view = view_2d{ B, n, k, b_transposed };
@@ -475,16 +475,16 @@ namespace ceras
 
             if constexpr ( cblas_mode )
             {
-                unsigned long dim = 16;
-                unsigned long increasement = 16;
+                size_t dim = 16;
+                size_t increasement = 16;
 
                 while ( true )
                 {
                     auto A = tensor<float>( {dim*dim,} );
                     auto B = tensor<float>( {dim*dim,} );
                     auto C = tensor<float>( {dim*dim,} );
-                    unsigned long t_gpu = time_it( [&](){ cuda_gemm( A.data(), false, B.data(), false, dim, dim, dim, C.data() ); });
-                    unsigned long t_cpu = time_it( [&](){ cblas_gemm( A.data(), false, B.data(), false, dim, dim, dim, C.data() ); });
+                    size_t t_gpu = time_it( [&](){ cuda_gemm( A.data(), false, B.data(), false, dim, dim, dim, C.data() ); });
+                    size_t t_cpu = time_it( [&](){ cblas_gemm( A.data(), false, B.data(), false, dim, dim, dim, C.data() ); });
 
                     if ( t_cpu > t_gpu ) break;
 
@@ -497,16 +497,16 @@ namespace ceras
             }
             else
             {
-                unsigned long dim = 16;
-                unsigned long increasement = 16;
+                size_t dim = 16;
+                size_t increasement = 16;
 
                 while ( true )
                 {
                     auto A = tensor<float>( {dim*dim,} );
                     auto B = tensor<float>( {dim*dim,} );
                     auto C = tensor<float>( {dim*dim,} );
-                    unsigned long t_gpu = time_it( [&](){ cuda_gemm( A.data(), false, B.data(), false, dim, dim, dim, C.data() ); });
-                    unsigned long t_cpu = time_it( [&](){ gemm_cpu( A.data(), false, B.data(), false, dim, dim, dim, C.data() ); });
+                    size_t t_gpu = time_it( [&](){ cuda_gemm( A.data(), false, B.data(), false, dim, dim, dim, C.data() ); });
+                    size_t t_cpu = time_it( [&](){ gemm_cpu( A.data(), false, B.data(), false, dim, dim, dim, C.data() ); });
 
                     if ( t_cpu > t_gpu ) break;
 
@@ -523,14 +523,14 @@ namespace ceras
     // C <= A * B
     // where A or A' is [m x n], B or B' is [n x k] and C is [m x k]
     template< typename T > requires std::floating_point<T>
-    void gemm( T const* A, bool a_transposed, T const* B, bool b_transposed, unsigned long m, unsigned long n, unsigned long k, T* __restrict__ C )
+    void gemm( T const* A, bool a_transposed, T const* B, bool b_transposed, size_t m, size_t n, size_t k, T* __restrict__ C )
     {
         if ( cuda_gemm_threshold == 0 ) // global variable defined in config.h
             update_cuda_gemm_threshold();
 
         if constexpr( cuda_mode )
         {
-            unsigned long const operations = m * n * k;
+            size_t const operations = m * n * k;
 
             if ( operations >= cuda_gemm_threshold )
                 cuda_gemm( A, a_transposed, B, b_transposed, m, n, k, C );
@@ -662,7 +662,7 @@ namespace ceras
     }
 
     template< Tensor Tsor >
-    Tsor reshape( Tsor const& ts, std::vector<unsigned long> const& new_shape )
+    Tsor reshape( Tsor const& ts, std::vector<size_t> const& new_shape )
     {
         Tsor ans = ts;
         return ans.reshape( new_shape );
@@ -714,11 +714,11 @@ namespace ceras
     template< Tensor Tsor >
     Tsor elementwise_product( Tsor const& lhs, Tsor const& rhs ) noexcept
     {
-        unsigned long const l_size = lhs.size();
-        unsigned long const r_size = rhs.size();
+        size_t const l_size = lhs.size();
+        size_t const r_size = rhs.size();
         if ( l_size < r_size ) return elementwise_product(rhs, lhs);
 
-        unsigned long const repeats = l_size / r_size;
+        size_t const repeats = l_size / r_size;
         better_assert( (r_size * repeats) == l_size, "Dimension is not match!" );
 
         Tsor ans = lhs.deep_copy();
@@ -747,7 +747,7 @@ namespace ceras
     }
 
     template< Tensor Tsor >
-    Tsor repeat( Tsor const& tsor, unsigned long n )
+    Tsor repeat( Tsor const& tsor, size_t n )
     {
         Tsor ans{ {n, tsor.size()} };
         {
@@ -755,7 +755,7 @@ namespace ceras
             for  ( auto idx : range(n) )
                 std::copy( tsor.begin(), tsor.end(), itor + idx * tsor.size() );
 
-            std::vector<unsigned long>  new_shape;
+            std::vector<size_t>  new_shape;
             new_shape.push_back( n );
             std::copy( tsor.shape().begin(), tsor.shape().end(), std::back_inserter( new_shape ) );
             ans.reshape( new_shape );
@@ -768,7 +768,7 @@ namespace ceras
     Tsor reduce_sum( Tsor const& tsor )
     {
         auto result = std::reduce( tsor.data(), tsor.data()+tsor.size(), typename Tsor::value_type{0} );
-        return Tsor{ std::vector<unsigned long>{1}, {result,} };
+        return Tsor{ std::vector<size_t>{1}, {result,} };
     }
 
     template< Tensor Tsor >
@@ -800,7 +800,7 @@ namespace ceras
             return ans;
         }
 
-        std::vector<unsigned long> new_shape;
+        std::vector<size_t> new_shape;
         for ( auto s : tsor.shape() )
             if (s > 1 )
                 new_shape.push_back( s );
@@ -814,8 +814,8 @@ namespace ceras
         if ( -1 == axis )
             return squeeze( tsor );
 
-        better_assert( tsor.ndim() > static_cast<unsigned long>(axis), fmt::format( "axis {} is too large for a tensor with {} dimensions.", axis, tsor.ndim() ) );
-        std::vector<unsigned long> shape = tsor.shape();
+        better_assert( tsor.ndim() > static_cast<size_t>(axis), fmt::format( "axis {} is too large for a tensor with {} dimensions.", axis, tsor.ndim() ) );
+        std::vector<size_t> shape = tsor.shape();
         better_assert( shape[axis] == 1UL, fmt::format("Expect {} dim of the tensor to be 1, but got {}.", axis, shape[axis] ) );
         std::copy( shape.begin()+axis+1, shape.end(), shape.begin()+axis );
         shape.resize( shape.size() - 1 );
@@ -824,7 +824,7 @@ namespace ceras
     }
 
     template< typename T, typename A=default_allocator<T> >
-    tensor<T,A> randn( std::vector<unsigned long> const& shape, T mean=T{0}, T stddev=T{1} )
+    tensor<T,A> randn( std::vector<size_t> const& shape, T mean=T{0}, T stddev=T{1} )
     {
         std::normal_distribution<T> distribution( mean, stddev );
         tensor<T,A> ans{ shape };
@@ -833,7 +833,7 @@ namespace ceras
     }
 
     template< typename T, typename A=default_allocator<T> >
-    tensor<T,A> truncated_normal( std::vector<unsigned long> const& shape, T mean=T{0}, T stddev=T{1}, T lower=T{0}, T upper=T{1} )
+    tensor<T,A> truncated_normal( std::vector<size_t> const& shape, T mean=T{0}, T stddev=T{1}, T lower=T{0}, T upper=T{1} )
     {
         std::normal_distribution<T> distribution( mean, stddev );
         tensor<T,A> ans{ shape };
@@ -867,7 +867,7 @@ namespace ceras
     }
 
     template< typename T, typename A=default_allocator<T> >
-    tensor<T,A> random( std::vector<unsigned long> const& shape, T min=T{0}, T max=T{1} )
+    tensor<T,A> random( std::vector<size_t> const& shape, T min=T{0}, T max=T{1} )
     {
         std::uniform_real_distribution<T> distribution( min, max );
         tensor<T,A> ans{ shape };
@@ -876,7 +876,7 @@ namespace ceras
     }
 
     template< typename T, typename A=default_allocator<T> >
-    tensor<T,A> rand( std::vector<unsigned long> const& shape, T min=T{0}, T max=T{1} )
+    tensor<T,A> rand( std::vector<size_t> const& shape, T min=T{0}, T max=T{1} )
     {
         return random( shape, min, max );
     }
@@ -897,7 +897,7 @@ namespace ceras
     //
     // Glorot, Xavier, and Yoshua Bengio. “Understanding the Difficulty of Training Deep Feedforward Neural Networks.” In Proceedings of the Thirteenth International Conference on Artificial Intelligence and Statistics, 249–256, 2010.
     template< typename T, typename A=default_allocator<T> >
-    tensor<T,A> glorot_uniform( std::initializer_list<unsigned long> shape )
+    tensor<T,A> glorot_uniform( std::initializer_list<size_t> shape )
     {
         T prev_dim = *(shape.begin());
         T next_dim = *(shape.begin()+1);
@@ -912,7 +912,7 @@ namespace ceras
     }
 
     template< Tensor Tsor >
-    Tsor concatenate( Tsor const& lhs, Tsor const& rhs, unsigned long axis=0 ) noexcept
+    Tsor concatenate( Tsor const& lhs, Tsor const& rhs, size_t axis=0 ) noexcept
     {
         if ( lhs.ndim() < rhs.ndim() )
             return concatenate( rhs, lhs, axis );
@@ -920,9 +920,9 @@ namespace ceras
         // axis alignment
         if ( lhs.ndim() > rhs.ndim() )
         {
-            unsigned long const dims_to_repeat = std::accumulate( lhs.shape().begin(), lhs.shape().begin()+lhs.ndim()-rhs.ndim(), 1UL, [](auto x, auto y ){ return x*y; } );
+            size_t const dims_to_repeat = std::accumulate( lhs.shape().begin(), lhs.shape().begin()+lhs.ndim()-rhs.ndim(), 1UL, [](auto x, auto y ){ return x*y; } );
             auto new_rhs = repeat( rhs, dims_to_repeat );
-            std::vector<unsigned long> new_shape{ lhs.shape().begin(), lhs.shape().begin()+lhs.ndim()-rhs.ndim() };
+            std::vector<size_t> new_shape{ lhs.shape().begin(), lhs.shape().begin()+lhs.ndim()-rhs.ndim() };
             std::copy( rhs.shape().begin(), rhs.shape().end(), std::back_inserter( new_shape ) );
             new_rhs.reshape( new_shape );
             return concatenate( lhs, new_rhs, axis );
@@ -931,16 +931,16 @@ namespace ceras
         auto l_shape = lhs.shape();
         auto r_shape = rhs.shape();
         better_assert( (l_shape.size() == r_shape.size()), "dimension not match, lhs dim is ", l_shape.size(), " and last dim ", *(l_shape.rbegin()),  ", but rhs dim is ", r_shape.size(), " where the last dim ", *(r_shape.rbegin()) );
-        axis = (axis == (unsigned long)(-1)) ? (l_shape.size()-1) : axis;
+        axis = (axis == (size_t)(-1)) ? (l_shape.size()-1) : axis;
         better_assert( (l_shape.size() > axis), "axis is too large: axis-", axis, " but allowed range-[0,", l_shape.size()-1, "]" );
-        better_assert( (std::vector<unsigned long>{l_shape.begin(), l_shape.begin()+axis} == std::vector<unsigned long>{r_shape.begin(), r_shape.begin()+axis}) );
-        better_assert( (std::vector<unsigned long>{l_shape.begin()+axis+1, l_shape.end()} == std::vector<unsigned long>{r_shape.begin()+axis+1, r_shape.end()}) );
+        better_assert( (std::vector<size_t>{l_shape.begin(), l_shape.begin()+axis} == std::vector<size_t>{r_shape.begin(), r_shape.begin()+axis}) );
+        better_assert( (std::vector<size_t>{l_shape.begin()+axis+1, l_shape.end()} == std::vector<size_t>{r_shape.begin()+axis+1, r_shape.end()}) );
 
-        unsigned long const memory_copy_times = std::max( 1UL, std::accumulate( l_shape.begin(), l_shape.begin()+axis, 1UL, []( auto x, auto y ){ return x*y; } ) );
-        unsigned long const l_memory_stride = std::accumulate( l_shape.begin()+axis, l_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
-        unsigned long const r_memory_stride = std::accumulate( r_shape.begin()+axis, r_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
+        size_t const memory_copy_times = std::max( 1UL, std::accumulate( l_shape.begin(), l_shape.begin()+axis, 1UL, []( auto x, auto y ){ return x*y; } ) );
+        size_t const l_memory_stride = std::accumulate( l_shape.begin()+axis, l_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
+        size_t const r_memory_stride = std::accumulate( r_shape.begin()+axis, r_shape.end(), 1UL, []( auto x, auto y ){ return x*y; } );
 
-        std::vector<unsigned long> result_shape = l_shape;
+        std::vector<size_t> result_shape = l_shape;
         result_shape[axis] += r_shape[axis];
         Tsor ans{ result_shape };
         auto target_memory_position = ans.data();
@@ -957,7 +957,7 @@ namespace ceras
     }
 
     template< Tensor Tsor >
-    Tsor repmat( Tsor const& tsor, unsigned long row_rep, unsigned long col_rep )
+    Tsor repmat( Tsor const& tsor, size_t row_rep, size_t col_rep )
     {
         better_assert( tsor.shape().size() == 2, "Only 2D array has repmat method, the input array has ", tsor.shape().size(), " dimensions!" );
         auto const& old_shape = tsor.shape();
@@ -974,7 +974,7 @@ namespace ceras
     }
 
     template< typename T, typename A=default_allocator<T> >
-    constexpr tensor<T,A> zeros( std::vector<unsigned long> const& shape )
+    constexpr tensor<T,A> zeros( std::vector<size_t> const& shape )
     {
         return {shape};
     }
@@ -986,7 +986,7 @@ namespace ceras
     }
 
     template< typename T, typename A=default_allocator<T> >
-    constexpr tensor<T,A> ones( std::vector<unsigned long> const& shape )
+    constexpr tensor<T,A> ones( std::vector<size_t> const& shape )
     {
         tensor<T, A> ans{ shape };
         std::fill( ans.data(), ans.data() + ans.size(), T{1} );
@@ -1073,8 +1073,8 @@ namespace ceras
         typedef typename Tsor::value_type value_type;
         better_assert( !tsor.empty(), "softmax argument is an empty tensor. " );
         Tsor ans = tsor.deep_copy();
-        unsigned long const last_dim = *(tsor.shape().rbegin());
-        unsigned long const rem_dim = tsor.size() / last_dim;
+        size_t const last_dim = *(tsor.shape().rbegin());
+        size_t const rem_dim = tsor.size() / last_dim;
         view_2d<value_type> mat{ ans.data(), rem_dim, last_dim };
         for ( auto idx : range( rem_dim ) )
         {
@@ -1105,18 +1105,18 @@ namespace ceras
     }
 
     template< Tensor Tsor, typename Function >
-    Tsor reduce( Tsor const& ts, unsigned long axis, typename Tsor::value_type const& init, Function const& func, bool keepdims=false ) noexcept
+    Tsor reduce( Tsor const& ts, size_t axis, typename Tsor::value_type const& init, Function const& func, bool keepdims=false ) noexcept
     {
         if ( ts.empty() ) return ts;
 
-        axis = (axis == static_cast<unsigned long>( -1 )) ? ts.ndim()-1 : axis;
+        axis = (axis == static_cast<size_t>( -1 )) ? ts.ndim()-1 : axis;
         better_assert( axis < ts.ndim(), "Error with tensor::reduce, input axis ", axis, " is too large for a tensor with ", ts.ndim(), " dimensions." );
 
-        std::vector<unsigned long> _shape = ts.shape();
-        unsigned long const pres = std::reduce( _shape.begin(), _shape.begin()+axis, 1Ul, []( unsigned long x, unsigned long y ){ return x*y; } );
-        unsigned long const post = std::reduce( _shape.begin()+axis+1, _shape.end(), 1Ul, []( unsigned long x, unsigned long y ){ return x*y; } );
+        std::vector<size_t> _shape = ts.shape();
+        size_t const pres = std::reduce( _shape.begin(), _shape.begin()+axis, 1Ul, []( size_t x, size_t y ){ return x*y; } );
+        size_t const post = std::reduce( _shape.begin()+axis+1, _shape.end(), 1Ul, []( size_t x, size_t y ){ return x*y; } );
 
-        unsigned long const n = _shape[axis];
+        size_t const n = _shape[axis];
         _shape[axis] = 1UL;
 
         Tsor ans{ _shape };
@@ -1140,22 +1140,22 @@ namespace ceras
     }
 
     template <Tensor Tsor>
-    Tsor sum( Tsor const& ts, unsigned long axis, bool keepdims=false ) noexcept
+    Tsor sum( Tsor const& ts, size_t axis, bool keepdims=false ) noexcept
     {
         return reduce( ts, axis, typename Tsor::value_type{0}, []( auto const& a, auto const& b ){ return a+b; }, keepdims );
     }
 
     template <Tensor Tsor> requires std::floating_point<typename Tsor::value_type>
-    Tsor mean( Tsor const& ts, unsigned long axis, bool keepdims=false ) noexcept
+    Tsor mean( Tsor const& ts, size_t axis, bool keepdims=false ) noexcept
     {
         typedef typename Tsor::value_type value_type;
-        axis = ( axis == static_cast<unsigned long>( -1 ) ) ? ts.ndim()-1 : axis;
+        axis = ( axis == static_cast<size_t>( -1 ) ) ? ts.ndim()-1 : axis;
         auto const& _shape = ts.shape();
         return reduce( ts, axis, value_type{0}, []( auto const& a, auto const& b ){ return a+b; }, keepdims ) / static_cast<value_type>( _shape[axis] );
     }
 
     template <Tensor Tsor> requires std::floating_point<typename Tsor::value_type>
-    Tsor variance( Tsor const& ts, unsigned long axis, bool keepdims=false ) noexcept
+    Tsor variance( Tsor const& ts, size_t axis, bool keepdims=false ) noexcept
     {
         Tsor x = mean( ts, axis, true );
         x = x - ts;
@@ -1164,7 +1164,7 @@ namespace ceras
     }
 
     template <Tensor Tsor> requires std::floating_point<typename Tsor::value_type>
-    Tsor standard_deviation( Tsor const& ts, unsigned long axis, bool keepdims=false ) noexcept
+    Tsor standard_deviation( Tsor const& ts, size_t axis, bool keepdims=false ) noexcept
     {
         Tsor x = variance( ts, axis, keepdims );
         for_each( x.begin(), x.end(), [](auto& v){ v = std::sqrt(v); } );
@@ -1185,23 +1185,23 @@ namespace ceras
     }
 
     template <Tensor Tsor>
-    Tsor max( Tsor const& ts, unsigned long axis, bool keepdims=false ) noexcept
+    Tsor max( Tsor const& ts, size_t axis, bool keepdims=false ) noexcept
     {
         return reduce( ts, axis, std::numeric_limits<typename Tsor::value_type>::min(), []( auto const& a, auto const& b ){ return a > b ? a : b; }, keepdims );
     }
 
     template <Tensor Tsor>
-    Tsor min( Tsor const& ts, unsigned long axis, bool keepdims=false ) noexcept
+    Tsor min( Tsor const& ts, size_t axis, bool keepdims=false ) noexcept
     {
         return reduce( ts, axis, std::numeric_limits<typename Tsor::value_type>::max(), []( auto const& a, auto const& b ){ return a < b ? a : b; }, keepdims );
     }
 
     template < typename T, typename A=default_allocator<T> > requires std::floating_point<T>
-    tensor<T,A> linspace( T start, T stop, unsigned long num, bool endpoint=true ) noexcept
+    tensor<T,A> linspace( T start, T stop, size_t num, bool endpoint=true ) noexcept
     {
         better_assert( num > 1, "tensor::linspace: expecting number larger than 1, but got ", num );
 
-        unsigned long const segs = endpoint ? num-1 : num;
+        size_t const segs = endpoint ? num-1 : num;
         T const distance = ( stop - start ) / segs;
 
         tensor<T,A> ans{ {num,} };
@@ -1217,12 +1217,12 @@ namespace ceras
         better_assert( __is.good(), "Error with the istream!" );
 
         // read the first line to extract shape
-        std::vector<unsigned long> shape;
+        std::vector<size_t> shape;
         {
             std::string s_shape;
             std::getline( __is, s_shape );
             std::stringstream ss( s_shape );
-            std::copy( std::istream_iterator<unsigned long>( ss ), std::istream_iterator<unsigned long>(), std::back_inserter( shape ) );
+            std::copy( std::istream_iterator<size_t>( ss ), std::istream_iterator<size_t>(), std::back_inserter( shape ) );
         }
 
         // read data
@@ -1255,7 +1255,7 @@ namespace ceras
 
         {//write shape
             auto const& shape = __x.shape();
-            std::copy( shape.begin(), shape.end(), std::ostream_iterator<unsigned long>{ __os, " " } );
+            std::copy( shape.begin(), shape.end(), std::ostream_iterator<size_t>{ __os, " " } );
             __os << "\n";
         }
         {//write data
@@ -1329,7 +1329,7 @@ namespace ceras
         template< Tensor Tsor>
         void flip_3D( Tsor const& tsor, Tsor& ans, int axis )
         {
-            std::vector<unsigned long> shape = tsor.shape();
+            std::vector<size_t> shape = tsor.shape();
             auto [r, c, ch] = std::make_tuple( shape[0], shape[1], shape[2] );
 
             auto src = view_3d{ tsor.data(), r, c, ch };
@@ -1370,8 +1370,8 @@ namespace ceras
         template< Tensor Tsor>
         void flip_2D( Tsor const& tsor, Tsor& ans, int axis )
         {
-            std::vector<unsigned long> const& shape = tsor.shape();
-            std::vector<unsigned long> const new_shape{ {shape[0], shape[1], 1} };
+            std::vector<size_t> const& shape = tsor.shape();
+            std::vector<size_t> const new_shape{ {shape[0], shape[1], 1} };
             Tsor _tsor = tsor;
             _tsor.reshape( new_shape );
             ans.reshape( new_shape );
@@ -1384,11 +1384,11 @@ namespace ceras
         template< Tensor Tsor>
         void flip_4D( Tsor const& tsor, Tsor& ans, int axis )
         {
-            std::vector<unsigned long> const& shape = tsor.shape();
+            std::vector<size_t> const& shape = tsor.shape();
 
             if ( 0 == axis || 1 == axis) // merge dim 2 and dim 3 for case of (0, 1), then flip along axis
             {
-                std::vector<unsigned long> const new_shape{ {shape[0], shape[1], shape[2]*shape[3] } };
+                std::vector<size_t> const new_shape{ {shape[0], shape[1], shape[2]*shape[3] } };
                 Tsor _tsor = tsor;
                 _tsor.reshape( new_shape );
                 ans.reshape( new_shape );
@@ -1399,7 +1399,7 @@ namespace ceras
             }
 
             // merge dim 0 and dim 1 for case of (2, 3), then flip along axis-1
-            std::vector<unsigned long> const new_shape{ {shape[0]*shape[1], shape[2], shape[3] } };
+            std::vector<size_t> const new_shape{ {shape[0]*shape[1], shape[2], shape[3] } };
             Tsor _tsor = tsor;
             _tsor.reshape( new_shape );
             ans.reshape( new_shape );
@@ -1414,7 +1414,7 @@ namespace ceras
         if ( 0 == tsor.size() )
             return;
 
-        unsigned long const ndim = tsor.ndim();
+        size_t const ndim = tsor.ndim();
         better_assert( (4 >= ndim), fmt::format( "Expect a tensor up to 4D, but got {} dimensions.", ndim ) );
 
         if (-1 == axis)
