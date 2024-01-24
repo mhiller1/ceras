@@ -34,7 +34,7 @@ namespace ceras
         place_holder()
         {
             (*this).state_ = std::make_shared<place_holder_state<Tsor>>();
-            (*((*this).state_)).shape_hint_ = std::vector< size_t >{ {-1UL,} };
+            (*((*this).state_)).shape_hint_ = std::vector< size_t >{-1UL};
         }
 
         place_holder( std::vector<size_t> const& shape_hint )
@@ -65,7 +65,7 @@ namespace ceras
         void reset() noexcept
         {
             (*((*this).state_)).data_ = Tsor{};
-            (*((*this).state_)).shape_hint_ = std::vector<size_t>{{-1UL}};
+            (*((*this).state_)).shape_hint_ = std::vector<size_t>{-1UL};
         }
 
         void backward( auto ) const noexcept { }

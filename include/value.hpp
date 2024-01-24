@@ -45,7 +45,7 @@ namespace ceras
 
         std::vector<unsigned long> shape() const noexcept
         {
-            return std::vector<unsigned long>{ {-1UL,} };
+            return std::vector<unsigned long>{-1UL};
         }
 
         value_type data() const noexcept

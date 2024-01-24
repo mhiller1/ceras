@@ -39,7 +39,7 @@ namespace ceras
 
         std::vector<size_t> operator()() const noexcept
         {
-            return std::vector<size_t>{ {-1UL,} };
+            return std::vector<size_t>{-1UL};
         }
     }; // struct identity_output_shape_calculator
 
@@ -935,7 +935,7 @@ namespace ceras
                                         return ans;
                                     },
                                     "sum_reduce",
-                                    []( std::vector<size_t> const& ) noexcept { return std::vector<size_t>{ {1,} }; }
+                                    []( std::vector<size_t> const& ) noexcept { return std::vector<size_t>{1}; }
                 )( ex );
     }
 
@@ -976,7 +976,7 @@ namespace ceras
                                         return ans;
                                     },
                                     "mean_reduce",
-                                    []( std::vector<size_t> const& ) noexcept { return std::vector<size_t>{ {1,} }; }
+                                    []( std::vector<size_t> const& ) noexcept { return std::vector<size_t>{1}; }
                 )( ex );
     }
 
@@ -1295,7 +1295,7 @@ namespace ceras
                         std::copy_if( shape.begin(), shape.end(), std::back_inserter( ans ), []( size_t n ){ return n != 1; } );
                         if ( ans.size() > 0 )
                             return ans;
-                        return std::vector<size_t>{ {1UL,} };
+                        return std::vector<size_t>{1UL};
                     }
 
                     std::vector<size_t> ans = shape;
